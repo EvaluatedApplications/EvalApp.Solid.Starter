@@ -1,4 +1,5 @@
 using EvalApp.Solid.Starter.Features.Ingestion;
+using EvalApp.Solid.Starter.Tests.Features.Ingestion.Shared;
 using Xunit;
 
 namespace EvalApp.Solid.Starter.Tests.Features.Ingestion;

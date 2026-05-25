@@ -17,8 +17,8 @@ public class BatchSyncPipelineTests
         var result = await pipeline.RunAsync(data);
 
         // Assert
-        Assert.IsType<StepResult<BatchSyncData>.Success>(result);
-        var successResult = (StepResult<BatchSyncData>.Success)result;
+        Assert.IsType<PipelineResult<BatchSyncData>.Success>(result);
+        var successResult = (PipelineResult<BatchSyncData>.Success)result;
         var finalData = successResult.Data;
 
         Assert.NotNull(finalData.Results);
@@ -39,8 +39,8 @@ public class BatchSyncPipelineTests
         var result = await pipeline.RunAsync(data);
 
         // Assert
-        Assert.IsType<StepResult<BatchSyncData>.Success>(result);
-        var successResult = (StepResult<BatchSyncData>.Success)result;
+        Assert.IsType<PipelineResult<BatchSyncData>.Success>(result);
+        var successResult = (PipelineResult<BatchSyncData>.Success)result;
         var finalData = successResult.Data;
 
         // With 70% success rate, we should have some successes and some failures
@@ -62,8 +62,8 @@ public class BatchSyncPipelineTests
         var result = await pipeline.RunAsync(data);
 
         // Assert
-        Assert.IsType<StepResult<BatchSyncData>.Success>(result);
-        var successResult = (StepResult<BatchSyncData>.Success)result;
+        Assert.IsType<PipelineResult<BatchSyncData>.Success>(result);
+        var successResult = (PipelineResult<BatchSyncData>.Success)result;
         var finalData = successResult.Data;
 
         Assert.Empty(finalData.Results ?? new Dictionary<int, ApiResponse>());
@@ -84,8 +84,8 @@ public class BatchSyncPipelineTests
         var result = await pipeline.RunAsync(data);
 
         // Assert
-        Assert.IsType<StepResult<BatchSyncData>.Success>(result);
-        var successResult = (StepResult<BatchSyncData>.Success)result;
+        Assert.IsType<PipelineResult<BatchSyncData>.Success>(result);
+        var successResult = (PipelineResult<BatchSyncData>.Success)result;
         var finalData = successResult.Data;
 
         Assert.Empty(finalData.ItemIds);
@@ -104,11 +104,11 @@ public class BatchSyncPipelineTests
         var result = await pipeline.RunAsync(data);
 
         // Assert
-        var successResult = (StepResult<BatchSyncData>.Success)result;
+        var successResult = (PipelineResult<BatchSyncData>.Success)result;
         var finalData = successResult.Data;
 
         // Verify each successful result has correct ItemId
-        foreach (var (itemId, response) in finalData.Results!)
+        foreach (var (itemId, response) in (Dictionary<int, ApiResponse>)finalData.Results!)
         {
             Assert.Equal(itemId, response.ItemId);
             Assert.Equal("Success", response.Status);
@@ -141,7 +141,7 @@ public class BatchSyncPipelineTests
         var result = await pipeline.RunAsync(data);
 
         // Assert
-        var successResult = (StepResult<BatchSyncData>.Success)result;
+        var successResult = (PipelineResult<BatchSyncData>.Success)result;
         var finalData = successResult.Data;
 
         // All 100 items should be processed (either success or failure)

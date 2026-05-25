@@ -1,6 +1,5 @@
 global using System;
 global using System.Collections.Generic;
-global using System.Collections.Immutable;
 global using System.Linq;
 global using System.Threading;
 global using System.Threading.Tasks;
@@ -15,3 +14,8 @@ global using EvalApp.Solid.Starter.Features.OrderSaga.Services;
 global using EvalApp.Solid.Starter.Features.RulesEngine;
 global using EvalApp.Solid.Starter.Features.RulesEngine.Pipelines;
 global using EvalApp.Solid.Starter.Shared;
+global using EvalApp.Solid.Starter.Tests.Features.BatchSync.Shared;
+global using EvalApp.Solid.Starter.Tests.Features.Ingestion.Shared;
+global using EvalApp.Solid.Starter.Tests.Features.OrderSaga.Shared;
+global using EvalApp.Solid.Starter.Tests.Shared;
+global using Xunit;

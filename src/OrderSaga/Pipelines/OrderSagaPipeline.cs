@@ -6,12 +6,18 @@ namespace EvalApp.Solid.Starter.Features.OrderSaga.Pipelines;
 /// <summary>
 /// OrderSaga Pipeline — Demonstrates SOLID principles via distributed transaction handling.
 /// 
-/// Saga Topology:
+/// Saga Topology with Resource Gating:
 ///   BeginSagaStep
-///     → ReserveInventoryStep [compensates with: ReleaseReservationStep]
-///     → ChargePaymentStep [compensates with: RefundPaymentStep]
-///     → ShipStep [compensates with: CancelShipmentStep]
+///     → Gate(Network) → ReserveInventoryStep [compensates with: ReleaseReservationStep]
+///     → Gate(Network) → ChargePaymentStep [compensates with: RefundPaymentStep]
+///     → Gate(Network) → ShipStep [compensates with: CancelShipmentStep]
 ///     → EndSagaStep
+/// 
+/// Gates Pattern:
+/// - WithResource registers Network resource for adaptive tuning
+/// - Gate(ResourceKind.Network) wraps external service calls
+/// - Tuning adapts concurrency based on network wait times
+/// - Configuration: min 1, max 10, default 5 concurrent calls
 /// 
 /// Compensation Semantics:
 ///   - If ReserveInventoryStep fails, nothing to compensate
@@ -27,6 +33,9 @@ namespace EvalApp.Solid.Starter.Features.OrderSaga.Pipelines;
 /// </summary>
 public static class OrderSagaPipeline
 {
+    /// <summary>
+    /// Build saga pipeline with resource gating and adaptive tuning for external service calls.
+    /// </summary>
     public static ICompiledPipeline<OrderSagaData> Build(
         IInventoryService inventoryService,
         IPaymentService paymentService,
@@ -36,12 +45,16 @@ public static class OrderSagaPipeline
         ICompiledPipeline<OrderSagaData> pipeline = null!;
 
         Eval.App("OrderSaga")
+            .WithResource(ResourceKind.Network, new TunableConfig(Min: 1, Max: 10, Default: 5))
             .DefineDomain("Fulfillment")
                 .DefineTask<OrderSagaData>("ProcessOrder")
                     .AddStep("BeginSaga", new BeginSagaStep())
-                    .AddStep("ReserveInventory", new ReserveInventoryStep(inventoryService))
-                    .AddStep("ChargePayment", new ChargePaymentStep(paymentService, orderAmount))
-                    .AddStep("Ship", new ShipStep(shipmentService))
+                    .Gate(ResourceKind.Network, null, gate => gate
+                        .AddStep("ReserveInventory", new ReserveInventoryStep(inventoryService)))
+                    .Gate(ResourceKind.Network, null, gate => gate
+                        .AddStep("ChargePayment", new ChargePaymentStep(paymentService, orderAmount)))
+                    .Gate(ResourceKind.Network, null, gate => gate
+                        .AddStep("Ship", new ShipStep(shipmentService)))
                     .AddStep("EndSaga", new EndSagaStep())
                     .Run(out pipeline)
                 .Build();

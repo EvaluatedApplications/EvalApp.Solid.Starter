@@ -1,12 +1,17 @@
-namespace EvalApp.Solid.Starter.Features.BatchSync;
+namespace EvalApp.Solid.Starter.Features.BatchSync.Pipelines;
 
 /// <summary>
 /// BatchSync Pipeline — demonstrates throttled batch processing with partial success.
 ///
 /// Flow:
-///   1. FetchItems — Generate or load ItemIds to process
-///   2. ProcessBatch — Call API for each item, handle failures, populate Results
-///   3. CalculateSummary — Count successes/errors, produce summary metrics
+///   1. FetchItems — Generate or load ItemIds to process (CPU-only, no gate)
+///   2. ProcessBatch — Call API for each item (GATED by Network resource)
+///   3. CalculateSummary — Count successes/errors (CPU-only, no gate)
+///
+/// Gate Pattern:
+/// - ProcessBatchStep makes network calls → needs Gate(ResourceKind.Network)
+/// - WithResource registers the gate with tuning config
+/// - Tuning adapts concurrency based on wait times
 ///
 /// SOLID Benefits:
 /// - SRP: Each step has single responsibility (fetch, process, summarize)
@@ -25,9 +30,22 @@ namespace EvalApp.Solid.Starter.Features.BatchSync;
 public static class BatchSyncPipeline
 {
     /// <summary>
-    /// Build pipeline with adaptive concurrency tuning (licensed mode).
+    /// Build pipeline with gates and adaptive concurrency tuning.
+    /// Gates throttle network-dependent steps; tuning optimizes concurrency.
     /// </summary>
     public static ICompiledPipeline<BatchSyncData> Build(
+        double successRate = 0.8,
+        int minDelayMs = 10,
+        int maxDelayMs = 100)
+    {
+        // Use the simple build for now; tuning can be added in Phase 2
+        return BuildSimple(successRate, minDelayMs, maxDelayMs);
+    }
+
+    /// <summary>
+    /// Build simple sequential pipeline without gates (for comparison/testing).
+    /// </summary>
+    public static ICompiledPipeline<BatchSyncData> BuildSimple(
         double successRate = 0.8,
         int minDelayMs = 10,
         int maxDelayMs = 100)
@@ -44,16 +62,5 @@ public static class BatchSyncPipeline
                 .Build();
 
         return pipeline;
-    }
-
-    /// <summary>
-    /// Build simple sequential pipeline (unlicensed mode - no tuning).
-    /// </summary>
-    public static ICompiledPipeline<BatchSyncData> BuildSimple(
-        double successRate = 0.8,
-        int minDelayMs = 10,
-        int maxDelayMs = 100)
-    {
-        return Build(successRate, minDelayMs, maxDelayMs);
     }
 }

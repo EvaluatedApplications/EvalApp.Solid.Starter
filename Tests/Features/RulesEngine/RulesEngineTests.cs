@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using EvalApp.Consumer;
 using EvalApp.Solid.Starter.Features.RulesEngine;
+using EvalApp.Solid.Starter.Features.RulesEngine.Pipelines;
 using EvalApp.Solid.Starter.Shared;
 using EvalApp.Solid.Starter.Tests.Shared;
 using Xunit;

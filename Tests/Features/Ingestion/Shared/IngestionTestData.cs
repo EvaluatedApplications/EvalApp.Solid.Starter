@@ -1,6 +1,6 @@
 using EvalApp.Solid.Starter.Features.Ingestion;
 
-namespace EvalApp.Solid.Starter.Tests.Features.Ingestion;
+namespace EvalApp.Solid.Starter.Tests.Features.Ingestion.Shared;
 
 public static class IngestionTestData
 {

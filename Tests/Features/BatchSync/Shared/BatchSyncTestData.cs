@@ -1,6 +1,6 @@
 using EvalApp.Solid.Starter.Features.BatchSync;
 
-namespace EvalApp.Solid.Starter.Tests.Features.BatchSync;
+namespace EvalApp.Solid.Starter.Tests.Features.BatchSync.Shared;
 
 public static class BatchSyncTestData
 {
