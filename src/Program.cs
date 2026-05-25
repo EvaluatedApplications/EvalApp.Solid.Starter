@@ -14,6 +14,7 @@ using EvalApp.Solid.Starter.Orders.Steps;
 using EvalApp.Solid.Starter.Accounting;
 using EvalApp.Solid.Starter.Catalog;
 using System.Collections.Immutable;
+using System.Reflection;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 //  Northstar Commerce Platform — Application Manifest
@@ -316,6 +317,23 @@ Eval.App("SolidStarter")
             .Run()
         .Build();
 
+static string RenderPipelineTree<T>(ICompiledPipeline<T> compiled)
+{
+    const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+    var field = compiled.GetType().GetField("_pipeline", flags);
+    if (field?.GetValue(compiled) is EvalApp.Core.Pipeline<T> core)
+        return EvalApp.Extensions.PipelineVisualizer<T>.ToTextTree(core.Root);
+
+    return "(Pipeline tree unavailable: consumer wrapper does not expose core pipeline internals.)";
+}
+
+static void PrintPipelineTree<T>(string title, ICompiledPipeline<T> compiled)
+{
+    Console.WriteLine($"🌳 {title} ({compiled.Name})");
+    Console.WriteLine("─────────────────────────────────────────────────────");
+    Console.WriteLine(RenderPipelineTree(compiled));
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 //  Demo Execution — Northstar Commerce Platform
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -323,6 +341,15 @@ Eval.App("SolidStarter")
 Console.WriteLine("╔═══════════════════════════════════════════════════════════════╗");
 Console.WriteLine("║   Northstar Commerce — Platform Verification                 ║");
 Console.WriteLine("╚═══════════════════════════════════════════════════════════════╝\n");
+
+PrintPipelineTree("Pricing Pipeline", rulesPipeline);
+PrintPipelineTree("Accounting Pipeline", batchPipeline);
+PrintPipelineTree("Catalog Pipeline", ingestionPipeline);
+PrintPipelineTree("Orders Pipeline", sagaPipeline);
+PrintPipelineTree("Commerce Pipeline", orchestrationPipeline);
+PrintPipelineTree("Analytics Pipeline", advancedPipeline);
+PrintPipelineTree("Platform Pipeline", apiSurfacePipeline);
+Console.WriteLine();
 
 // Pricing subsystem
 Console.WriteLine("📋 Pricing: Discount eligibility and tax calculation");
@@ -441,4 +468,3 @@ catch (Exception ex) { Console.WriteLine($"❌ Failed: {ex.Message}\n"); }
 Console.WriteLine("╔═══════════════════════════════════════════════════════════════╗");
 Console.WriteLine("║                   Platform Verified ✨                       ║");
 Console.WriteLine("╚═══════════════════════════════════════════════════════════════╝");
-
