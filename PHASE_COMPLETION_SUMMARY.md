@@ -34,10 +34,10 @@ The SOLID Starter tutorial has been completely upgraded from a skeletal project 
 
 | Feature | Purpose | Complexity | Tests | Status |
 |---------|---------|-----------|-------|--------|
-| **RulesEngine** | Pure logic + business rules | Beginner | 15 | ✅ 100% |
-| **BatchSync** | Async I/O + partial failures | Intermediate | 6 | ✅ 100% |
-| **Ingestion** | Stream processing + validation | Intermediate | 6 | ✅ 100% |
-| **OrderSaga** | Distributed transactions | Advanced | 18 | ✅ 100% |
+| **Pricing** | Pure logic + business rules | Beginner | 15 | ✅ 100% |
+| **Accounting** | Async I/O + partial failures | Intermediate | 6 | ✅ 100% |
+| **Catalog** | Stream processing + validation | Intermediate | 6 | ✅ 100% |
+| **Orders** | Distributed transactions | Advanced | 18 | ✅ 100% |
 
 #### Key Achievements
 
@@ -52,29 +52,29 @@ The SOLID Starter tutorial has been completely upgraded from a skeletal project 
 
 ```
 src/
-├── RulesEngine/
+├── Pricing/
 │   ├── Steps/*.cs (5 steps)
-│   ├── Pipelines/RulesEnginePipeline.cs
+│   ├── Pipelines/PricingPipeline.cs
 │   └── Docs/README.md
-├── BatchSync/
+├── Accounting/
 │   ├── Steps/*.cs (3 steps)
-│   ├── Pipelines/BatchSyncPipeline.cs
+│   ├── Pipelines/AccountingPipeline.cs
 │   └── Docs/README.md
-├── Ingestion/
+├── Catalog/
 │   ├── Steps/*.cs (3 steps)
-│   ├── Pipelines/IngestionPipeline.cs
+│   ├── Pipelines/CatalogPipeline.cs
 │   └── Docs/README.md
-└── OrderSaga/
+└── Orders/
     ├── Steps/*.cs (6 steps)
-    ├── Pipelines/OrderSagaPipeline.cs
+    ├── Pipelines/OrdersPipeline.cs
     └── Docs/README.md
 
 Tests/
 └── Features/
-    ├── RulesEngine/*.cs (15 tests)
-    ├── BatchSync/*.cs (6 tests)
-    ├── Ingestion/*.cs (6 tests)
-    └── OrderSaga/*.cs (18 tests)
+    ├── Pricing/*.cs (15 tests)
+    ├── Accounting/*.cs (6 tests)
+    ├── Catalog/*.cs (6 tests)
+    └── Orders/*.cs (18 tests)
 ```
 
 ---
@@ -88,7 +88,7 @@ Tests/
 
 | Pattern | Feature | Purpose | Status |
 |---------|---------|---------|--------|
-| **Gates** | BatchSync, OrderSaga | Resource throttling | ✅ |
+| **Gates** | Accounting, Orders | Resource throttling | ✅ |
 | **WithResource()** | All features | Concurrency config | ✅ |
 | **WithTuning()** | Foundation set | Adaptive concurrency | ✅ |
 | **Middleware** | Foundation set | Resilience patterns | ✅ |
@@ -96,8 +96,8 @@ Tests/
 
 #### Key Achievements
 
-- ✅ BatchSync gates NetworkIO calls (prevents API overload)
-- ✅ OrderSaga gates distributed transaction steps
+- ✅ Accounting gates NetworkIO calls (prevents API overload)
+- ✅ Orders gates distributed transaction steps
 - ✅ WithResource() configured for concurrency control
 - ✅ All 53 tests still passing after changes
 - ✅ No regressions
@@ -105,12 +105,12 @@ Tests/
 #### Pattern Details
 
 ```csharp
-// Example: BatchSync with Gates
-Eval.App("BatchSync")
+// Example: Accounting with Gates
+Eval.App("Accounting")
     .WithResource(ResourceKind.Network, new TunableConfig(Min: 1, Max: 10, Default: 5))
     .WithTuning()
     .DefineDomain("Processing")
-        .DefineTask<BatchSyncData>("SyncBatch")
+        .DefineTask<AccountingData>("SyncBatch")
             .AddStep("FetchItems", new FetchItemsStep())
             .Gate(ResourceKind.Network, null, gate => gate
                 .AddStep("ProcessBatch", new ProcessBatchStep(...)))
@@ -129,10 +129,10 @@ Eval.App("BatchSync")
 | File | Purpose | Lines | Status |
 |------|---------|-------|--------|
 | `README.md` | Master integration guide | 250 | ✅ |
-| `src/RulesEngine/Docs/README.md` | Feature guide | 180 | ✅ |
-| `src/BatchSync/Docs/README.md` | Feature guide | 200 | ✅ |
-| `src/Ingestion/Docs/README.md` | Feature guide | 220 | ✅ |
-| `src/OrderSaga/Docs/README.md` | Feature guide | 240 | ✅ |
+| `src/Pricing/Docs/README.md` | Feature guide | 180 | ✅ |
+| `src/Accounting/Docs/README.md` | Feature guide | 200 | ✅ |
+| `src/Catalog/Docs/README.md` | Feature guide | 220 | ✅ |
+| `src/Orders/Docs/README.md` | Feature guide | 240 | ✅ |
 | `docs/GATES_AND_TUNING.md` | Pattern deep-dive | 200 | ✅ |
 | `docs/MIDDLEWARE_RESILIENCE.md` | Pattern deep-dive | 180 | ✅ |
 | `docs/PARALLEL_PROCESSING.md` | Pattern deep-dive | 150 | ✅ |
@@ -169,13 +169,13 @@ Eval.App("BatchSync")
 
 | Pattern | Feature | Purpose | Status |
 |---------|---------|---------|--------|
-| **ContextPureStep** | RulesEngine | Dependency injection | ✅ |
-| **DomainContext** | RulesEngine | Configuration injection | ✅ |
-| **PricingContext** | RulesEngine | Domain-specific context | ✅ |
-| **Tax Calculation** | RulesEngine | Context-driven logic | ✅ |
+| **ContextPureStep** | Pricing | Dependency injection | ✅ |
+| **DomainContext** | Pricing | Configuration injection | ✅ |
+| **PricingContext** | Pricing | Domain-specific context | ✅ |
+| **Tax Calculation** | Pricing | Context-driven logic | ✅ |
 | **DryRun Validation** | All features | Pipeline validation | ✅ |
 | **PipelineVisualizer** | All features | Pipeline introspection | ✅ |
-| **CircuitBreaker** | OrderSaga | Failure pattern protection | ✅ |
+| **CircuitBreaker** | Orders | Failure pattern protection | ✅ |
 
 #### Context Dependency Injection Pattern
 
@@ -196,7 +196,7 @@ public record PricingContext(
 }
 
 // Steps receive context via DefineDomain()
-Eval.App("RulesEngine")
+Eval.App("Pricing")
     .DefineDomain("Pricing", PricingContext.Default)
         .DefineTask<PricingData>("CalculatePrice")
             // Steps have access to pricing configuration
@@ -215,10 +215,10 @@ Eval.App("RulesEngine")
 #### Files Created
 
 ```
-src/RulesEngine/
+src/Pricing/
 ├── Context/PricingContext.cs (new)
 ├── Steps/ApplyTaxStep.cs (new)
-└── Tests/RulesEngineContextTests.cs (new, 8 tests)
+└── Tests/PricingContextTests.cs (new, 8 tests)
 ```
 
 ---
@@ -231,33 +231,33 @@ src/RulesEngine/
 |----------|---------|--------|---------|
 | **Builders** | Eval.App() | ✅ | All |
 | **Builders** | WithContext() | ✅ | All |
-| **Builders** | WithResource() | ✅ | BatchSync, OrderSaga |
+| **Builders** | WithResource() | ✅ | Accounting, Orders |
 | **Builders** | WithTuning() | ✅ | All (foundation) |
 | **Builders** | DefineDomain() | ✅ | All |
 | **Builders** | DefineTask() | ✅ | All |
 | **Builders** | AddStep() | ✅ | All |
-| **Step Types** | PureStep | ✅ | RulesEngine, Ingestion |
-| **Step Types** | AsyncStep | ✅ | BatchSync, OrderSaga |
-| **Step Types** | ContextPureStep | ✅ | RulesEngine (Phase 4) |
+| **Step Types** | PureStep | ✅ | Pricing, Catalog |
+| **Step Types** | AsyncStep | ✅ | Accounting, Orders |
+| **Step Types** | ContextPureStep | ✅ | Pricing (Phase 4) |
 | **Step Types** | ContextSideEffectStep | 🟡 | Optional |
-| **Control Flow** | Gate() | ✅ | BatchSync, OrderSaga |
+| **Control Flow** | Gate() | ✅ | Accounting, Orders |
 | **Control Flow** | If/Else | 🟡 | Foundation set |
 | **Control Flow** | ForEach | 🟡 | Foundation set |
-| **Control Flow** | BeginSaga() | ✅ | OrderSaga |
+| **Control Flow** | BeginSaga() | ✅ | Orders |
 | **Middleware** | Retry | 🟡 | Foundation set |
-| **Middleware** | CircuitBreaker | ✅ | OrderSaga |
+| **Middleware** | CircuitBreaker | ✅ | Orders |
 | **Middleware** | Timeout | 🟡 | Foundation set |
 | **Middleware** | Audit | 🟡 | Foundation set |
 | **Extensions** | DryRun | ✅ | All (Phase 4) |
 | **Extensions** | Visualizer | ✅ | All (Phase 4) |
 | **Extensions** | Serializer | ⊘ | Out of scope |
 | **Context** | GlobalContext | ✅ | All |
-| **Context** | DomainContext | ✅ | RulesEngine (Phase 4) |
+| **Context** | DomainContext | ✅ | Pricing (Phase 4) |
 | **Context** | StepContext | ✅ | All |
 | **Advanced** | CrossDomainBridge | 🟡 | Optional |
 | **Advanced** | FallbackStep | ⊘ | Out of scope |
 | **Advanced** | FuncStep | ⊘ | Out of scope |
-| **Advanced** | Compensation | ✅ | OrderSaga |
+| **Advanced** | Compensation | ✅ | Orders |
 | **Advanced** | Error Handling | ✅ | All |
 | **Advanced** | CancellationToken | ✅ | All |
 
@@ -271,10 +271,10 @@ src/RulesEngine/
 
 | Feature | Unit | Integration | Edge Case | Total |
 |---------|------|-------------|-----------|-------|
-| **RulesEngine** | 10 | 3 | 8 | 21 |
-| **BatchSync** | 8 | 4 | 6 | 18 |
-| **Ingestion** | 7 | 4 | 5 | 16 |
-| **OrderSaga** | 14 | 6 | 8 | 28 |
+| **Pricing** | 10 | 3 | 8 | 21 |
+| **Accounting** | 8 | 4 | 6 | 18 |
+| **Catalog** | 7 | 4 | 5 | 16 |
+| **Orders** | 14 | 6 | 8 | 28 |
 | **Shared/Cross-feature** | - | - | 2 | 2 |
 | **TOTAL** | 39 | 17 | 29 | **85** |
 
@@ -412,17 +412,17 @@ Deep-dive guides for:
 ```
 EvalApp.Solid.Starter/
 ├── src/
-│   ├── RulesEngine/         (pricing rules)
-│   ├── BatchSync/           (async I/O)
-│   ├── Ingestion/           (stream processing)
-│   ├── OrderSaga/           (distributed transactions)
+│   ├── Pricing/         (pricing rules)
+│   ├── Accounting/           (async I/O)
+│   ├── Catalog/           (stream processing)
+│   ├── Orders/           (distributed transactions)
 │   └── Program.cs           (runs all 4 features)
 ├── Tests/
 │   └── Features/
-│       ├── RulesEngine/     (21 tests)
-│       ├── BatchSync/       (18 tests)
-│       ├── Ingestion/       (16 tests)
-│       ├── OrderSaga/       (28 tests)
+│       ├── Pricing/     (21 tests)
+│       ├── Accounting/       (18 tests)
+│       ├── Catalog/       (16 tests)
+│       ├── Orders/       (28 tests)
 │       └── Shared/          (shared test utilities)
 ├── docs/                    (pattern documentation)
 └── README.md                (master guide)
@@ -482,10 +482,10 @@ After working through this tutorial, developers will understand:
 ## 📞 Support & Questions
 
 Each feature has comprehensive documentation:
-- **RulesEngine** → Pure logic and SOLID principles
-- **BatchSync** → Async I/O and error handling
-- **Ingestion** → Parallel processing and validation
-- **OrderSaga** → Distributed transactions and compensation
+- **Pricing** → Pure logic and SOLID principles
+- **Accounting** → Async I/O and error handling
+- **Catalog** → Parallel processing and validation
+- **Orders** → Distributed transactions and compensation
 
 See `README.md` for learning paths and feature guides.
 
@@ -510,3 +510,4 @@ The SOLID Starter tutorial has been transformed from a skeletal project into a *
 **Commit:** `b1f780e`  
 **Date:** May 25, 2026  
 **Version:** v2.0.0-SOLID-Starter
+

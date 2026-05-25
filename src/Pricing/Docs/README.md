@@ -1,4 +1,4 @@
-# Pricing Service (RulesEngine)
+# Pricing Service (Pricing)
 
 Back to platform overview: [Root README](../../../README.md)
 
@@ -12,7 +12,7 @@ Northstar needs deterministic and explainable pricing for checkout:
 
 ## Implemented Business Rules
 
-Source: `src/RulesEngine/Steps/` and `src/RulesEngine/Context/PricingContext.cs`
+Source: `src/Pricing/Steps/` and `src/Pricing/Context/PricingContext.cs`
 
 1. Eligibility is granted when shopper is VIP, or has purchase history > 5, or total spend > 1000.
 2. Clearance in basket enforces at least 20% promotional discount floor.
@@ -35,10 +35,11 @@ Step order is intentional:
 
 | Concern | Path |
 |---|---|
-| Pipeline topology | `src/RulesEngine/Pipelines/RulesEnginePipeline.cs` |
-| Pricing context policy | `src/RulesEngine/Context/PricingContext.cs` |
-| Pricing step implementations | `src/RulesEngine/Steps/` |
-| Executable specs | `Tests/Features/RulesEngine/` |
+| Pipeline topology | `src/Pricing/Pipelines/PricingPipeline.cs` |
+| Pricing context policy | `src/Pricing/Context/PricingContext.cs` |
+| Pricing step implementations | `src/Pricing/Steps/` |
+| Executable specs | `Tests/Features/Pricing/` |
 
 
-Verify: `dotnet test --filter "RulesEngine"`
+Verify: `dotnet test --filter "Pricing"`
+

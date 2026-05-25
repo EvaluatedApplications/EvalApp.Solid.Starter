@@ -52,7 +52,7 @@ Use for:
 ```
 
 **Example: SOLID Starter**
-- `BatchSync.ProcessBatchStep` — API calls gated
+- `Accounting.ProcessBatchStep` — API calls gated
 
 ### Database (SQL, EF Core)
 
@@ -207,26 +207,26 @@ API usage: 100% (Optimal)
 
 ## 📈 Real-World Example: SOLID Starter
 
-### BatchSync Feature
+### Accounting Feature
 
 **Scenario:** Process 1000 items via external API
 
 **Configuration:**
 
 ```csharp
-public static class BatchSyncPipeline
+public static class AccountingPipeline
 {
-    public static ICompiledPipeline<BatchSyncData> Build(
+    public static ICompiledPipeline<AccountingData> Build(
         double successRate = 0.8,
         int minDelayMs = 10,
         int maxDelayMs = 100)
     {
-        ICompiledPipeline<BatchSyncData> pipeline = null!;
+        ICompiledPipeline<AccountingData> pipeline = null!;
 
-        Eval.App("BatchSync")
+        Eval.App("Accounting")
             .WithTuning()  // ← Enable adaptive concurrency
             .DefineDomain("Processing")
-                .DefineTask<BatchSyncData>("SyncBatch")
+                .DefineTask<AccountingData>("SyncBatch")
                     .AddStep("FetchItems", new FetchItemsStep())
                     .AddStep("ProcessBatch", new ProcessBatchStep(successRate, minDelayMs, maxDelayMs))
                     .AddStep("CalculateSummary", new CalculateSummaryStep())
@@ -366,4 +366,5 @@ new GateConfig { DefaultConcurrency = 10 }  // ← Start higher
 
 ---
 
-**Ready?** Study `src/BatchSync/Docs/README.md` for a working example with gates and tuning.
+**Ready?** Study `src/Accounting/Docs/README.md` for a working example with gates and tuning.
+

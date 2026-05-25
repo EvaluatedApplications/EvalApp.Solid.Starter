@@ -1,4 +1,4 @@
-# Fulfillment Transaction Service (OrderSaga)
+# Fulfillment Transaction Service (Orders)
 
 Back to platform overview: [Root README](../../../README.md)
 
@@ -14,7 +14,7 @@ If any stage fails, operations must receive enough state to perform controlled r
 
 ## Implemented Business Rules
 
-Source: `src/OrderSaga/Pipelines/OrderSagaPipeline.cs`, `src/OrderSaga/Steps/`
+Source: `src/Orders/Pipelines/OrdersPipeline.cs`, `src/Orders/Steps/`
 
 1. Reserve inventory before charging payment.
 2. Charge payment before creating shipment.
@@ -32,10 +32,11 @@ Source: `src/OrderSaga/Pipelines/OrderSagaPipeline.cs`, `src/OrderSaga/Steps/`
 
 | Concern | Path |
 |---|---|
-| Pipeline orchestration | `src/OrderSaga/Pipelines/OrderSagaPipeline.cs` |
-| Transaction steps | `src/OrderSaga/Steps/` |
-| Service interfaces | `src/OrderSaga/Services/` |
-| Executable specs | `Tests/Features/OrderSaga/` |
+| Pipeline Commerce | `src/Orders/Pipelines/OrdersPipeline.cs` |
+| Transaction steps | `src/Orders/Steps/` |
+| Service interfaces | `src/Orders/Services/` |
+| Executable specs | `Tests/Features/Orders/` |
 
 
-Verify: `dotnet test --filter "OrderSaga"`
+Verify: `dotnet test --filter "Orders"`
+

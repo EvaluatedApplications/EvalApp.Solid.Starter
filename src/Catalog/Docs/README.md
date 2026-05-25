@@ -1,4 +1,4 @@
-# Catalog Intake Service (Ingestion)
+# Catalog Intake Service (Catalog)
 
 Back to platform overview: [Root README](../../../README.md)
 
@@ -12,7 +12,7 @@ Northstar ingests third-party catalog records continuously:
 
 ## Implemented Business Rules
 
-Source: `src/Ingestion/Steps/ValidateItemStep.cs`, `src/Ingestion/Steps/ProcessAllItemsStep.cs`
+Source: `src/Catalog/Steps/ValidateItemStep.cs`, `src/Catalog/Steps/ProcessAllItemsStep.cs`
 
 1. `Name` is required (blank names are rejected).
 2. `Amount` must be greater than zero.
@@ -31,10 +31,11 @@ Source: `src/Ingestion/Steps/ValidateItemStep.cs`, `src/Ingestion/Steps/ProcessA
 
 | Concern | Path |
 |---|---|
-| Pipeline topology | `src/Ingestion/Pipelines/IngestionPipeline.cs` |
-| Validation rules | `src/Ingestion/Steps/ValidateItemStep.cs` |
-| Item processing | `src/Ingestion/Steps/ProcessAllItemsStep.cs` |
-| Executable specs | `Tests/Features/Ingestion/` |
+| Pipeline topology | `src/Catalog/Pipelines/CatalogPipeline.cs` |
+| Validation rules | `src/Catalog/Steps/ValidateItemStep.cs` |
+| Item processing | `src/Catalog/Steps/ProcessAllItemsStep.cs` |
+| Executable specs | `Tests/Features/Catalog/` |
 
 
-Verify: `dotnet test --filter "Ingestion"`
+Verify: `dotnet test --filter "Catalog"`
+

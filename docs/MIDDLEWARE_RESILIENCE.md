@@ -54,7 +54,7 @@ try {
 | 30 sec | Long-running operations | Database queries, file uploads |
 | 60 sec | Batch operations | Processing large datasets |
 
-### In SOLID Starter: OrderSaga
+### In SOLID Starter: Orders
 
 ```csharp
 // ChargePaymentStep has implicit timeout
@@ -122,10 +122,10 @@ public class RetryPolicy
 | 3 | Exponential | Network calls (default) |
 | 5 | Exponential + Jitter | Batch processing |
 
-### In SOLID Starter: OrderSaga
+### In SOLID Starter: Orders
 
 ```csharp
-// OrderSaga could add retry middleware
+// Orders could add retry middleware
 // ReserveInventoryStep fails → Retry 3x before compensating
 ```
 
@@ -392,4 +392,5 @@ public async Task WhenFailuresExceedThreshold_Then_CircuitOpens()
 
 ---
 
-**Ready?** Study `src/OrderSaga/Docs/README.md` for compensation patterns.
+**Ready?** Study `src/Orders/Docs/README.md` for compensation patterns.
+

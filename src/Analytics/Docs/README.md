@@ -1,4 +1,4 @@
-# Quote Intelligence Service (AdvancedPatterns)
+# Quote Intelligence Service (Analytics)
 
 Back to platform overview: [Root README](../../../README.md)
 
@@ -12,7 +12,7 @@ Northstar’s quoting surface must remain responsive under variable load while p
 
 ## Implemented Business Rules
 
-Source: `src/AdvancedPatterns/Pipelines/AdvancedPatternsPipeline.cs`
+Source: `src/Analytics/Pipelines/AnalyticsPipeline.cs`
 
 1. Request metadata is stamped before quote retrieval.
 2. Primary quote path returns premium value (`125`) when healthy.
@@ -37,10 +37,11 @@ Runtime controls:
 
 | Concern | Path |
 |---|---|
-| Pipeline declaration | `src/AdvancedPatterns/Pipelines/AdvancedPatternsPipeline.cs` |
-| Middleware behavior | `src/AdvancedPatterns/Middleware/` |
-| Helper operations | `src/AdvancedPatterns/Helpers/AdvancedPatternHelpers.cs` |
-| Executable specs | `Tests/Features/AdvancedPatterns/` |
+| Pipeline declaration | `src/Analytics/Pipelines/AnalyticsPipeline.cs` |
+| Middleware behavior | `src/Analytics/Middleware/` |
+| Helper operations | `src/Analytics/Helpers/AdvancedPatternHelpers.cs` |
+| Executable specs | `Tests/Features/Analytics/` |
 
 
-Verify: `dotnet test --filter "AdvancedPatterns"`
+Verify: `dotnet test --filter "Analytics"`
+

@@ -108,23 +108,23 @@ ForEach aggregates results → Output Data(Results: [Result1, Result2, ...])
 - If latency increases → Decrease concurrency
 - Stay within [1, 20] bounds
 
-## 📈 Real-World Example: SOLID Starter Ingestion
+## 📈 Real-World Example: SOLID Starter Catalog
 
 **Scenario:** Process 1000 items from data stream
 
 ### Implementation
 
 ```csharp
-public static class IngestionPipeline
+public static class CatalogPipeline
 {
-    public static ICompiledPipeline<IngestionData> Build()
+    public static ICompiledPipeline<CatalogData> Build()
     {
-        ICompiledPipeline<IngestionData> pipeline = null!;
+        ICompiledPipeline<CatalogData> pipeline = null!;
 
-        Eval.App("Ingestion")
+        Eval.App("Catalog")
             .WithTuning()
             .DefineDomain("BatchProcessing")
-                .DefineTask<IngestionData>("ProcessStream")
+                .DefineTask<CatalogData>("ProcessStream")
                     .AddStep("Materialize", new MaterializeStep())
                     .AddStep("ProcessAllItems", new ProcessAllItemsStep())
                     .AddStep("Summarize", new SummarizeResultsStep())
@@ -360,4 +360,5 @@ public async Task WhenProcessing10000Items_Then_CompletesEfficiently()
 
 ---
 
-**Ready?** Study `src/Ingestion/Docs/README.md` for a working ForEach example with tuning.
+**Ready?** Study `src/Catalog/Docs/README.md` for a working ForEach example with tuning.
+

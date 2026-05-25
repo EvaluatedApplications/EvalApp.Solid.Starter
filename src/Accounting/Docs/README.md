@@ -1,4 +1,4 @@
-# Settlement Sync Service (BatchSync)
+# Settlement Sync Service (Accounting)
 
 Back to platform overview: [Root README](../../../README.md)
 
@@ -12,7 +12,7 @@ Northstar finance requires nightly reconciliation with external partner systems:
 
 ## Implemented Business Rules
 
-Source: `src/BatchSync/Steps/ProcessBatchStep.cs`
+Source: `src/Accounting/Steps/ProcessBatchStep.cs`
 
 1. Every `ItemId` is processed and classified as success or failure.
 2. `SuccessCount + ErrorCount` must equal total input item count.
@@ -30,10 +30,11 @@ Source: `src/BatchSync/Steps/ProcessBatchStep.cs`
 
 | Concern | Path |
 |---|---|
-| Pipeline topology | `src/BatchSync/Pipelines/BatchSyncPipeline.cs` |
-| Batch processing behavior | `src/BatchSync/Steps/ProcessBatchStep.cs` |
-| Data model | `src/BatchSync/BatchSyncData.cs` |
-| Executable specs | `Tests/Features/BatchSync/` |
+| Pipeline topology | `src/Accounting/Pipelines/AccountingPipeline.cs` |
+| Batch processing behavior | `src/Accounting/Steps/ProcessBatchStep.cs` |
+| Data model | `src/Accounting/AccountingData.cs` |
+| Executable specs | `Tests/Features/Accounting/` |
 
 
-Verify: `dotnet test --filter "BatchSync"`
+Verify: `dotnet test --filter "Accounting"`
+

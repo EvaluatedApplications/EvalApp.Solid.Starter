@@ -1,4 +1,4 @@
-# Commerce Orchestration Service
+# Commerce Commerce Service
 
 Back to platform overview: [Root README](../../../README.md)
 
@@ -8,16 +8,16 @@ Northstar requires one end-to-end business flow that coordinates:
 
 - pricing policy domain
 - fulfillment policy domain
-- orchestration domain that stitches both into one order lifecycle
+- Commerce domain that stitches both into one order lifecycle
 
 ## Implemented Business Rules
 
-Source: `src/Orchestration/Pipelines/*.cs`, `src/Orchestration/Contexts/*`
+Source: `src/Commerce/Pipelines/*.cs`, `src/Commerce/Contexts/*`
 
 1. Pricing computes net, discount, tax, and final totals using domain context.
 2. Fulfillment prepares packable lines and selects shipping by policy threshold/VIP status.
 3. Label creation and archival are explicit side-effect stages.
-4. Orchestration runs pricing output into fulfillment input in ordered composition.
+4. Commerce runs pricing output into fulfillment input in ordered composition.
 
 Operational constants:
 
@@ -36,11 +36,12 @@ Operational constants:
 
 | Concern | Path |
 |---|---|
-| Pricing pipeline | `src/Orchestration/Pipelines/CommercePricingPipeline.cs` |
-| Fulfillment pipeline | `src/Orchestration/Pipelines/CommerceFulfillmentPipeline.cs` |
-| Orchestration pipeline | `src/Orchestration/Pipelines/CommerceOrchestrationPipeline.cs` |
-| Domain policies | `src/Orchestration/Contexts/` |
-| Executable specs | `Tests/Features/Orchestration/` |
+| Pricing pipeline | `src/Commerce/Pipelines/CommercePricingPipeline.cs` |
+| Fulfillment pipeline | `src/Commerce/Pipelines/CommerceFulfillmentPipeline.cs` |
+| Commerce pipeline | `src/Commerce/Pipelines/CommerceCommercePipeline.cs` |
+| Domain policies | `src/Commerce/Contexts/` |
+| Executable specs | `Tests/Features/Commerce/` |
 
 
-Verify: `dotnet test --filter "Orchestration"`
+Verify: `dotnet test --filter "Commerce"`
+

@@ -96,7 +96,7 @@ foreach (var item in items) {
 ```
 
 **In SOLID Starter:**
-- `Ingestion` feature uses ForEach for parallel item processing
+- `Catalog` feature uses ForEach for parallel item processing
 - Example: Processes 1000 items with tunable concurrency (5-20 concurrent)
 
 ---
@@ -142,8 +142,8 @@ return data with {
 ```
 
 **In SOLID Starter:**
-- `BatchSync.ProcessBatchStep` tracks successful results AND failed IDs
-- `Ingestion.ProcessAllItemsStep` separates valid items from invalid items
+- `Accounting.ProcessBatchStep` tracks successful results AND failed IDs
+- `Catalog.ProcessAllItemsStep` separates valid items from invalid items
 
 ---
 
@@ -168,7 +168,7 @@ const decimal discountCap = 0.30m;
 
 ```csharp
 // GOOD: Configuration via dependency injection
-public class ProcessBatchStep : PureStep<BatchSyncData>
+public class ProcessBatchStep : PureStep<AccountingData>
 {
     private readonly int _timeoutMs;
     private readonly IApiClient _client;
@@ -221,7 +221,7 @@ ShipOrder();             // ← Inventory reserved but order not charged!
 2. No need to refund (never charged)
 
 **In SOLID Starter:**
-- `OrderSaga` feature demonstrates saga with compensation
+- `Orders` feature demonstrates saga with compensation
 - LIFO compensation order (reverse of forward steps)
 
 ---
@@ -261,7 +261,7 @@ Eval.App("ProcessData")
 
 **In SOLID Starter:**
 - All features use fluent builder API
-- Example: `RulesEnginePipeline.Build()` declares 4 steps declaratively
+- Example: `PricingPipeline.Build()` declares 4 steps declaratively
 
 ---
 
@@ -298,8 +298,8 @@ await Task.WhenAll(tasks);  // ← 1000 concurrent requests!
 - Tunes automatically (if `.WithTuning()` enabled)
 
 **In SOLID Starter:**
-- `BatchSync` feature gates all network calls
-- `OrderSaga` gates external service calls
+- `Accounting` feature gates all network calls
+- `Orders` gates external service calls
 
 ---
 
@@ -349,7 +349,7 @@ return data with {
 
 **In SOLID Starter:**
 - All features use immutable records
-- Example: `PricingData`, `BatchSyncData`, `IngestionData`
+- Example: `PricingData`, `AccountingData`, `CatalogData`
 
 ---
 
@@ -393,7 +393,7 @@ public void WhenValidInput_Then_TransformsCorrectly() {
 ```
 
 **In SOLID Starter:**
-- 80+ tests (13/15 RulesEngine + 10+ BatchSync + 12+ Ingestion + 20+ OrderSaga)
+- 80+ tests (13/15 Pricing + 10+ Accounting + 12+ Catalog + 20+ Orders)
 - Each test follows `When{Condition}_Then_{Expected}` pattern
 - Tests cover happy path, edge cases, and error scenarios
 
@@ -449,4 +449,5 @@ The best anti-pattern protection is **working code you understand**. Study SOLID
 - ✅ Performance
 
 Follow the patterns. Avoid the anti-patterns. Ship good code.
+
 

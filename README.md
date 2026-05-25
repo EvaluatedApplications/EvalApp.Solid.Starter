@@ -2,7 +2,7 @@
 
 This repository represents a fictional production codebase for **Northstar Commerce Group**.
 
-It demonstrates how Northstar implements business workflows (pricing, ingestion, settlement, fulfillment) using EvalApp pipelines with SOLID-driven design.
+It demonstrates how Northstar implements business workflows (pricing, Catalog, settlement, fulfillment) using EvalApp pipelines with SOLID-driven design.
 
 ## Business Context
 
@@ -18,13 +18,13 @@ This repo models those pressures as runnable services.
 
 | Requirement | Service module | Primary source |
 |---|---|---|
-| Personalized, policy-driven pricing | RulesEngine | `src/RulesEngine/` |
-| Nightly partner settlement reconciliation | BatchSync | `src/BatchSync/` |
-| Catalog intake with quarantine of bad records | Ingestion | `src/Ingestion/` |
-| Inventory/payment/shipment transaction flow | OrderSaga | `src/OrderSaga/` |
-| End-to-end quote-to-fulfillment orchestration | Orchestration | `src/Orchestration/` |
-| Resilient low-latency quote path under load | AdvancedPatterns | `src/AdvancedPatterns/` |
-| Platform API-surface and parity validation | ApiSurface | `src/ApiSurface/` |
+| Personalized, policy-driven pricing | Pricing | `src/Pricing/` |
+| Nightly partner settlement reconciliation | Accounting | `src/Accounting/` |
+| Catalog intake with quarantine of bad records | Catalog | `src/Catalog/` |
+| Inventory/payment/shipment transaction flow | Orders | `src/Orders/` |
+| End-to-end quote-to-fulfillment Commerce | Commerce | `src/Commerce/` |
+| Resilient low-latency quote path under load | Analytics | `src/Analytics/` |
+| Platform API-surface and parity validation | Platform | `src/Platform/` |
 
 ## Architecture Snapshot
 
@@ -32,7 +32,7 @@ Northstar’s application entrypoint is one unified pipeline declaration in `src
 
 - single `Eval.App("SolidStarter")`
 - multiple business domains (`DefineDomain(...)`)
-- composed sub-pipelines where orchestration chains outputs into downstream inputs
+- composed sub-pipelines where Commerce chains outputs into downstream inputs
 - centralized resource/tuning declarations at app level
 
 ## Why These Technical Choices
@@ -41,7 +41,7 @@ Northstar’s application entrypoint is one unified pipeline declaration in `src
 
 Northstar selected EvalApp because business flows require:
 
-- explicit orchestration topology (`ForEach`, `If`, `Gate`, saga)
+- explicit Commerce topology (`ForEach`, `If`, `Gate`, saga)
 - predictable handling of partial failures
 - controllable throughput and resource boundaries
 - source-visible architecture (builder chain as executable map)
@@ -50,11 +50,11 @@ Northstar selected EvalApp because business flows require:
 
 Each service demonstrates a SOLID principle in action:
 
-- RulesEngine: **SRP** (each step = one pricing concern)
-- OrderSaga: **DIP** (depends on service interfaces, not implementations)
-- Ingestion: **OCP** (validation rules expand via steps, not rewrites)
-- Orchestration: **ISP** (narrow, composable pipeline contracts)
-- AdvancedPatterns: **LSP** (middleware and fallback steps are interchangeable)
+- Pricing: **SRP** (each step = one pricing concern)
+- Orders: **DIP** (depends on service interfaces, not implementations)
+- Catalog: **OCP** (validation rules expand via steps, not rewrites)
+- Commerce: **ISP** (narrow, composable pipeline contracts)
+- Analytics: **LSP** (middleware and fallback steps are interchangeable)
 
 ## Run the Platform
 
@@ -69,11 +69,12 @@ dotnet test
 
 Each feature README links EvalApp capabilities to SOLID decisions:
 
-- `src/RulesEngine/Docs/README.md`
-- `src/BatchSync/Docs/README.md`
-- `src/Ingestion/Docs/README.md`
-- `src/OrderSaga/Docs/README.md`
-- `src/Orchestration/Docs/README.md`
-- `src/AdvancedPatterns/Docs/README.md`
-- `src/ApiSurface/Docs/README.md`
+- `src/Pricing/Docs/README.md`
+- `src/Accounting/Docs/README.md`
+- `src/Catalog/Docs/README.md`
+- `src/Orders/Docs/README.md`
+- `src/Commerce/Docs/README.md`
+- `src/Analytics/Docs/README.md`
+- `src/Platform/Docs/README.md`
+
 

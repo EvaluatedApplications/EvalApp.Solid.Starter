@@ -14,7 +14,7 @@ Visual guide to SOLID Starter's structure and data flow.
 │ └──────────────────────────────────────────────────────────────┘ │
 │                              ↓                                   │
 │    ┌─────────────────────────────────────────────────────────┐   │
-│    │ Feature 1: RulesEngine                                  │   │
+│    │ Feature 1: Pricing                                  │   │
 │    ├─────────────────────────────────────────────────────────┤   │
 │    │ ✓ CalculateNetPrice → EvaluateEligibility             │   │
 │    │ ✓ ApplyPromotionRules → CalculateFinalPrice           │   │
@@ -23,7 +23,7 @@ Visual guide to SOLID Starter's structure and data flow.
 │    └─────────────────────────────────────────────────────────┘   │
 │                              ↓                                   │
 │    ┌─────────────────────────────────────────────────────────┐   │
-│    │ Feature 2: BatchSync                                    │   │
+│    │ Feature 2: Accounting                                    │   │
 │    ├─────────────────────────────────────────────────────────┤   │
 │    │ ✓ FetchItems → [GATE: Network] ProcessBatch            │   │
 │    │ ✓ CalculateSummary                                     │   │
@@ -32,7 +32,7 @@ Visual guide to SOLID Starter's structure and data flow.
 │    └─────────────────────────────────────────────────────────┘   │
 │                              ↓                                   │
 │    ┌─────────────────────────────────────────────────────────┐   │
-│    │ Feature 3: Ingestion                                    │   │
+│    │ Feature 3: Catalog                                    │   │
 │    ├─────────────────────────────────────────────────────────┤   │
 │    │ ✓ Materialize → ProcessAllItems (ForEach) →            │   │
 │    │ ✓ SummarizeResults                                     │   │
@@ -41,7 +41,7 @@ Visual guide to SOLID Starter's structure and data flow.
 │    └─────────────────────────────────────────────────────────┘   │
 │                              ↓                                   │
 │    ┌─────────────────────────────────────────────────────────┐   │
-│    │ Feature 4: OrderSaga                                    │   │
+│    │ Feature 4: Orders                                    │   │
 │    ├─────────────────────────────────────────────────────────┤   │
 │    │ ✓ BeginSaga → [Gate: Network] ReserveInventory         │   │
 │    │ ✓ [Gate: Network] ChargePayment →                      │   │
@@ -58,13 +58,13 @@ Visual guide to SOLID Starter's structure and data flow.
 ### Scenario: Ingest orders, calculate pricing, sync with external systems, fulfill
 
 ```
-Raw Orders (Ingestion)
+Raw Orders (Catalog)
      │
      ├─────────────────────────────────────────────────────┐
      │                                                     │
      ↓                                                     │
 ┌────────────────────┐                                    │
-│ Ingestion Pipeline │                                    │
+│ Catalog Pipeline │                                    │
 │ (ForEach + Tune)   │ → Process 1000 orders              │
 │                    │   5-20 concurrent                  │
 └────────────────────┘ → ValidItems + InvalidItems       │
@@ -78,7 +78,7 @@ Raw Orders (Ingestion)
      │                                                     │
      ↓                                                     │
 ┌────────────────────┐                                    │
-│ RulesEngine        │                                    │
+│ Pricing        │                                    │
 │ Pipeline           │ → Calculate pricing per order      │
 │ (4 steps)          │   Discounts applied                │
 └────────────────────┘ → Orders with final price          │
@@ -87,7 +87,7 @@ Raw Orders (Ingestion)
      │
      ↓
 ┌────────────────────┐
-│ BatchSync          │
+│ Accounting          │
 │ Pipeline           │ → Sync with external systems
 │ (Gate: Network)    │   100 orders × 3-5 concurrent
 └────────────────────┘ → Synced + FailedOrders
@@ -101,7 +101,7 @@ Raw Orders (Ingestion)
      │                                  │
      ↓                                  │
 ┌────────────────────┐                  │
-│ OrderSaga          │                  │
+│ Orders          │                  │
 │ Pipeline           │ → Fulfill orders │
 │ (Saga + Comp.)     │   Distribute     │
 │ (Gate: Network)    │   inventory,     │
@@ -118,16 +118,16 @@ Fulfilled Orders + Orphaned Orders
 Complexity Curve:
 
 High ┤
-     │                               OrderSaga
+     │                               Orders
      │                              ╱(Saga + Comp.)
      │                          ╱──
      │                      ╱──
-     │                 Ingestion
+     │                 Catalog
      │            ╱────(ForEach)
      │        ╱──
      │    ╱──
      │──
-     │ RulesEngine    BatchSync
+     │ Pricing    Accounting
      │(Pure)          (Async + Gate)
 Low  └─────────────────────────────
      0   1    2    3    4    5    6
@@ -136,7 +136,7 @@ Low  └────────────────────────
 
 ## 📊 Step Taxonomy by Feature
 
-### RulesEngine (100% Pure)
+### Pricing (100% Pure)
 
 ```
 PricingData
@@ -158,37 +158,37 @@ PricingData(DiscountPercent: ...)
 PricingData(FinalPrice: ...)
 ```
 
-### BatchSync (Async + Gated)
+### Accounting (Async + Gated)
 
 ```
-BatchSyncData
+AccountingData
     ↓
 [FetchItems] — Pure
     ↓
-BatchSyncData(Items: [100 items])
+AccountingData(Items: [100 items])
     ↓
 [ProcessBatch] — [GATE: Network]
     ├─ ForEach item (network call)
     ├─ Track successes + failures
     └─ Return results + failedIds
     ↓
-BatchSyncData(Results: [...], FailedIds: [...])
+AccountingData(Results: [...], FailedIds: [...])
     ↓
 [CalculateSummary] — Pure
     ↓
-BatchSyncData(SuccessCount: 70, ErrorCount: 30, ...)
+AccountingData(SuccessCount: 70, ErrorCount: 30, ...)
 ```
 
-### Ingestion (ForEach + Tuning)
+### Catalog (ForEach + Tuning)
 
 ```
-IngestionData
+CatalogData
     ↓
 [Materialize] — Pure
     ├─ Initialize collections
     └─ Prepare stream
     ↓
-IngestionData(ValidItems: [], InvalidItems: [])
+CatalogData(ValidItems: [], InvalidItems: [])
     ↓
 [ProcessAllItems] — ForEach (tuned)
     ├─ For each item in stream (parallel)
@@ -196,44 +196,44 @@ IngestionData(ValidItems: [], InvalidItems: [])
     ├─ Track success or failure
     └─ Accumulate results
     ↓
-IngestionData(ValidItems: [1000], InvalidItems: [50])
+CatalogData(ValidItems: [1000], InvalidItems: [50])
     ↓
 [SummarizeResults] — Pure
     ↓
-IngestionData(SuccessCount: 1000, FailureCount: 50, Summary: "...")
+CatalogData(SuccessCount: 1000, FailureCount: 50, Summary: "...")
 ```
 
-### OrderSaga (Saga + Compensation)
+### Orders (Saga + Compensation)
 
 ```
-OrderSagaData
+OrdersData
     ↓
 [BeginSaga] — Pure
     ↓
-OrderSagaData(State: Pending)
+OrdersData(State: Pending)
     ↓
 [ReserveInventory] — [GATE: Network]
     └─ Compensation: ReleaseReservation
     ↓
-OrderSagaData(State: InventoryReserved)
+OrdersData(State: InventoryReserved)
     ↓
 [ChargePayment] — [GATE: Network]
     └─ Compensation: RefundPayment
     ↓
-OrderSagaData(State: Charged)
+OrdersData(State: Charged)
     ↓
 [Ship] — [GATE: Network]
     └─ Compensation: CancelShipment
     ↓
-OrderSagaData(State: Shipped)
+OrdersData(State: Shipped)
     ↓
 [EndSaga] — Pure
     ↓
-OrderSagaData(State: Completed)
+OrdersData(State: Completed)
 
 ┌─ If any step fails:
 ├─ Compensation runs in LIFO order
-├─ OrderSagaData(State: CompensationInProgress → Failed)
+├─ OrdersData(State: CompensationInProgress → Failed)
 └─ No orphaned state!
 ```
 
@@ -241,7 +241,7 @@ OrderSagaData(State: Completed)
 
 ```
 src/
-├── RulesEngine/
+├── Pricing/
 │   ├── PricingData.cs                 ← Data record
 │   ├── Steps/
 │   │   ├── CalculateNetPriceStep.cs   ← Pure step
@@ -249,12 +249,12 @@ src/
 │   │   ├── ApplyPromotionRulesStep.cs ← Rule logic
 │   │   └── CalculateFinalPriceStep.cs
 │   ├── Pipelines/
-│   │   └── RulesEnginePipeline.cs     ← Builder
+│   │   └── PricingPipeline.cs     ← Builder
 │   └── Docs/
 │       └── README.md
 │
-├── BatchSync/
-│   ├── BatchSyncData.cs               ← Data record
+├── Accounting/
+│   ├── AccountingData.cs               ← Data record
 │   ├── ProcessingItem.cs              ← Item type
 │   ├── Steps/
 │   │   ├── FetchItemsStep.cs
@@ -263,12 +263,12 @@ src/
 │   │   ├── AggregateResultsStep.cs
 │   │   └── HandleFailuresStep.cs
 │   ├── Pipelines/
-│   │   └── BatchSyncPipeline.cs       ← Builder + Gate
+│   │   └── AccountingPipeline.cs       ← Builder + Gate
 │   └── Docs/
 │       └── README.md
 │
-├── Ingestion/
-│   ├── IngestionData.cs               ← Data record
+├── Catalog/
+│   ├── CatalogData.cs               ← Data record
 │   ├── Steps/
 │   │   ├── MaterializeStep.cs
 │   │   ├── ProcessAllItemsStep.cs     ← ForEach
@@ -276,12 +276,12 @@ src/
 │   │   ├── ValidateItemStep.cs
 │   │   └── SummarizeResultsStep.cs
 │   ├── Pipelines/
-│   │   └── IngestionPipeline.cs       ← Builder + ForEach
+│   │   └── CatalogPipeline.cs       ← Builder + ForEach
 │   └── Docs/
 │       └── README.md
 │
-├── OrderSaga/
-│   ├── OrderSagaData.cs               ← Data record
+├── Orders/
+│   ├── OrdersData.cs               ← Data record
 │   ├── Services/                      ← Interfaces
 │   │   ├── IInventoryService.cs
 │   │   ├── IPaymentService.cs
@@ -296,7 +296,7 @@ src/
 │   │   ├── CancelShipmentStep.cs      ← Compensation
 │   │   └── EndSagaStep.cs
 │   ├── Pipelines/
-│   │   └── OrderSagaPipeline.cs       ← Builder + Saga
+│   │   └── OrdersPipeline.cs       ← Builder + Saga
 │   └── Docs/
 │       └── README.md
 │
@@ -306,22 +306,22 @@ src/
 
 Tests/
 ├── Features/
-│   ├── RulesEngine/
-│   │   └── RulesEngineTests.cs        ← 15+ tests
-│   ├── BatchSync/
-│   │   ├── BatchSyncTests.cs          ← 10+ tests
+│   ├── Pricing/
+│   │   └── PricingTests.cs        ← 15+ tests
+│   ├── Accounting/
+│   │   ├── AccountingTests.cs          ← 10+ tests
 │   │   └── Shared/
-│   │       └── BatchSyncTestData.cs
-│   ├── Ingestion/
-│   │   ├── IngestionDataTests.cs      ← 12+ tests
-│   │   ├── IngestionPipelineTests.cs
+│   │       └── AccountingTestData.cs
+│   ├── Catalog/
+│   │   ├── CatalogDataTests.cs      ← 12+ tests
+│   │   ├── CatalogPipelineTests.cs
 │   │   └── Shared/
-│   │       └── IngestionTestData.cs
-│   └── OrderSaga/
-│       ├── OrderSagaStepsTests.cs     ← 20+ tests
+│   │       └── CatalogTestData.cs
+│   └── Orders/
+│       ├── OrdersStepsTests.cs     ← 20+ tests
 │       └── Shared/
 │           ├── MockServices.cs
-│           └── OrderSagaTestData.cs
+│           └── OrdersTestData.cs
 │
 └── Shared/
     └── TestData.cs
@@ -339,31 +339,31 @@ docs/
 
 ```
 Phase 1: Understand Basics
-├─ Read RulesEngine/Docs/README.md
+├─ Read Pricing/Docs/README.md
 ├─ Study PricingData record
 ├─ Review 4 pure steps
-├─ Run tests: dotnet test --filter RulesEngine
+├─ Run tests: dotnet test --filter Pricing
 └─ Modify a rule, re-run tests
 
 Phase 2: Add Async & Error Handling
-├─ Read BatchSync/Docs/README.md
+├─ Read Accounting/Docs/README.md
 ├─ Understand ProcessBatchStep
 ├─ Study gate configuration
-├─ Run tests: dotnet test --filter BatchSync
+├─ Run tests: dotnet test --filter Accounting
 └─ Adjust concurrency, observe behavior
 
 Phase 3: Master Parallelism
-├─ Read Ingestion/Docs/README.md
+├─ Read Catalog/Docs/README.md
 ├─ Understand ForEach pattern
 ├─ Study tuning configuration
-├─ Run tests: dotnet test --filter Ingestion
+├─ Run tests: dotnet test --filter Catalog
 └─ Stress test with 10000+ items
 
 Phase 4: Distributed Transactions
-├─ Read OrderSaga/Docs/README.md
+├─ Read Orders/Docs/README.md
 ├─ Understand saga pattern
 ├─ Study compensation semantics
-├─ Run tests: dotnet test --filter OrderSaga
+├─ Run tests: dotnet test --filter Orders
 └─ Trace failure paths
 
 Phase 5: Deep Dive (Optional)
@@ -376,7 +376,7 @@ Phase 5: Deep Dive (Optional)
 
 ## 🎯 Next Steps
 
-1. Start with [RulesEngine](../src/RulesEngine/Docs/README.md)
+1. Start with [Pricing](../src/Pricing/Docs/README.md)
 2. Progress through features in order
 3. Review anti-patterns as you learn
 4. Read pattern guides for deep understanding
@@ -384,4 +384,5 @@ Phase 5: Deep Dive (Optional)
 
 ---
 
-**Understanding the architecture?** Move to [RulesEngine/Docs/README.md](../src/RulesEngine/Docs/README.md)
+**Understanding the architecture?** Move to [Pricing/Docs/README.md](../src/Pricing/Docs/README.md)
+

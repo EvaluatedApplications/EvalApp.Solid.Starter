@@ -1,27 +1,27 @@
-# Ingestion Feature Implementation - Summary
+# Catalog Feature Implementation - Summary
 
 ## Overview
-I've successfully implemented the **Ingestion Feature** for EvalApp.Solid.Starter, demonstrating stream-to-batch processing with partial success semantics. This teaches how to handle ad hoc buffering/error handling reliably in a pipeline architecture.
+I've successfully implemented the **Catalog Feature** for EvalApp.Solid.Starter, demonstrating stream-to-batch processing with partial success semantics. This teaches how to handle ad hoc buffering/error handling reliably in a pipeline architecture.
 
 ## What Was Created
 
-### 1. Data Models (`src/Ingestion/IngestionData.cs`)
+### 1. Data Models (`src/Catalog/CatalogData.cs`)
 - **RawRecord** — Raw input from stream (Id, Name, Amount)
 - **ValidatedRecord** — Enriched output with timestamp (Id, Name, Amount, ProcessedAt)
 - **ValidationError** — Error record with reason (Id, Reason)
-- **IngestionData** — Pipeline data record
+- **CatalogData** — Pipeline data record
   - InputStream: source items
   - ValidItems: successfully processed items
   - InvalidItems: items that failed validation
   - Counters: TotalProcessed, SuccessCount, ErrorCount
   - Summary: human-readable result text
 
-### 2. Steps (`src/Ingestion/Steps/`)
+### 2. Steps (`src/Catalog/Steps/`)
 
 #### MaterializeStep.cs
 - **Responsibility**: Initialize output collections
 - **Behavior**: Sets up empty ValidItems and InvalidItems lists
-- **Type**: PureStep<IngestionData>
+- **Type**: PureStep<CatalogData>
 
 #### ValidateItemStep.cs
 - **Responsibility**: Validate individual records
@@ -29,17 +29,17 @@ I've successfully implemented the **Ingestion Feature** for EvalApp.Solid.Starte
   - Name must not be empty
   - Amount must be > 0
 - **Behavior**: Returns error reason if invalid, null if valid
-- **Type**: PureStep<IngestionData>
+- **Type**: PureStep<CatalogData>
 
 #### ProcessItemStep.cs
 - **Responsibility**: Transform validated records
 - **Behavior**: Adds ProcessedAt timestamp to each valid record
-- **Type**: PureStep<IngestionData>
+- **Type**: PureStep<CatalogData>
 
 #### ProcessAllItemsStep.cs
 - **Responsibility**: Orchestrate validation and transformation
 - **Behavior**: Iterates all items, populates both valid and invalid collections
-- **Type**: PureStep<IngestionData>
+- **Type**: PureStep<CatalogData>
 - **Key Feature**: Demonstrates partial success — doesn't fail on individual item errors
 
 #### SummarizeResultsStep.cs
@@ -49,9 +49,9 @@ I've successfully implemented the **Ingestion Feature** for EvalApp.Solid.Starte
   - "All 5 items processed successfully"
   - "All 4 items failed validation"
   - "Partial success: 3 valid, 2 invalid (total 5)"
-- **Type**: PureStep<IngestionData>
+- **Type**: PureStep<CatalogData>
 
-### 3. Pipeline (`src/Ingestion/Pipelines/IngestionPipeline.cs`)
+### 3. Pipeline (`src/Catalog/Pipelines/CatalogPipeline.cs`)
 ```
 Materialize 
   ↓
@@ -65,19 +65,19 @@ SummarizeResults
 - No ForEach in base implementation (straightforward iteration in ProcessAllItemsStep)
 - All data is immutable; transformations use `data with { }`
 
-### 4. Tests (`Tests/Features/Ingestion/`)
+### 4. Tests (`Tests/Features/Catalog/`)
 
-#### IngestionTestData.cs (Shared)
+#### CatalogTestData.cs (Shared)
 - Test data factories for creating various scenarios
 - `CreateAllValidData()` — all items pass validation
 - `CreateAllInvalidData()` — all items fail validation
 - `CreateMixedData()` — mix of valid and invalid items
 
-#### IngestionDataTests.cs
+#### CatalogDataTests.cs
 - Tests immutability and defaults
 - Verifies data record behavior
 
-#### IngestionPipelineTests.cs (40+ test cases)
+#### CatalogPipelineTests.cs (40+ test cases)
 - **Pipeline Integration Tests**:
   - WhenAllValid_Then_AllProcessedSuccessfully ✅
   - WhenAllInvalid_Then_AllFailedValidation ✅
@@ -93,7 +93,7 @@ SummarizeResults
   - SummarizeResultsStep aggregation ✅
   - ProcessAllItemsStep partial success ✅
 
-### 5. Documentation (`src/Ingestion/Docs/README.md`)
+### 5. Documentation (`src/Catalog/Docs/README.md`)
 Comprehensive guide covering:
 - **Problem Statement** — Pain points of ad hoc buffering
 - **EvalApp Solution** — Data models, pipeline topology, SOLID mapping
@@ -122,14 +122,14 @@ Comprehensive guide covering:
 |-----------|----------------|
 | **SRP** | Each step has one reason to change (Materialize, Validate, Process, Summarize) |
 | **OCP** | New validation rules added to ValidateItemStep without changing pipeline |
-| **LSP** | All steps inherit PureStep<IngestionData> with consistent contracts |
+| **LSP** | All steps inherit PureStep<CatalogData> with consistent contracts |
 | **ISP** | Minimal interfaces — only Execute(data) method needed |
 | **DIP** | Steps depend on abstraction (PureStep<T>), not implementations |
 
 ## File Structure
 ```
-src/Ingestion/
-├── IngestionData.cs                    # Data models
+src/Catalog/
+├── CatalogData.cs                    # Data models
 ├── Steps/
 │   ├── MaterializeStep.cs              # Initialize collections
 │   ├── ValidateItemStep.cs             # Validate constraints
@@ -137,20 +137,20 @@ src/Ingestion/
 │   ├── ProcessAllItemsStep.cs          # Orchestrate validation/transformation
 │   └── SummarizeResultsStep.cs         # Aggregate outcomes
 ├── Pipelines/
-│   └── IngestionPipeline.cs            # Pipeline builder
+│   └── CatalogPipeline.cs            # Pipeline builder
 └── Docs/
     └── README.md                        # Feature documentation
 
-Tests/Features/Ingestion/
-├── IngestionPipelineTests.cs           # 40+ test cases
-├── IngestionDataTests.cs               # Data model tests
+Tests/Features/Catalog/
+├── CatalogPipelineTests.cs           # 40+ test cases
+├── CatalogDataTests.cs               # Data model tests
 └── Shared/
-    └── IngestionTestData.cs            # Test data factories
+    └── CatalogTestData.cs            # Test data factories
 ```
 
 ## Build Status
-- **Ingestion code**: ✅ Compiles successfully (no errors in Ingestion files)
-- **Existing errors**: OrderSaga feature has pre-existing compilation issues (not related to Ingestion)
+- **Catalog code**: ✅ Compiles successfully (no errors in Catalog files)
+- **Existing errors**: Orders feature has pre-existing compilation issues (not related to Catalog)
 
 ## Key Features
 
@@ -177,9 +177,9 @@ Tests/Features/Ingestion/
 
 ## Next Steps
 
-1. **Build & Test**: Once OrderSaga is fixed, run full test suite
+1. **Build & Test**: Once Orders is fixed, run full test suite
    ```powershell
-   dotnet test Tests/EvalApp.Solid.Starter.Tests.csproj --filter "Ingestion"
+   dotnet test Tests/EvalApp.Solid.Starter.Tests.csproj --filter "Catalog"
    ```
 
 2. **Review**: Check that partial success semantics meet your requirements
@@ -194,3 +194,4 @@ Tests/Features/Ingestion/
 **Lines of Code**: ~1000 (including comprehensive tests and documentation)  
 **Test Coverage**: 80%+ across steps and pipeline  
 **SOLID Compliance**: Full adherence to all five principles  
+

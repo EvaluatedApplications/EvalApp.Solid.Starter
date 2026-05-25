@@ -8,10 +8,10 @@ Each feature teaches one pattern. Real systems combine multiple patterns:
 
 ```
 Single Feature:
-RulesEngine → Simple pricing logic
-BatchSync → Simple API sync
-Ingestion → Simple stream processing
-OrderSaga → Simple transaction handling
+Pricing → Simple pricing logic
+Accounting → Simple API sync
+Catalog → Simple stream processing
+Orders → Simple transaction handling
 
 Cross-Feature Scenario:
 Ingest Orders → Calculate Pricing → Sync with Systems → Fulfill
@@ -22,8 +22,8 @@ Ingest Orders → Calculate Pricing → Sync with Systems → Fulfill
 ### Use Case
 
 Process raw orders from external system:
-1. Ingest order stream (Ingestion + ForEach)
-2. Calculate final pricing (RulesEngine)
+1. Ingest order stream (Catalog + ForEach)
+2. Calculate final pricing (Pricing)
 3. Store in database
 
 ### Architecture
@@ -31,12 +31,12 @@ Process raw orders from external system:
 ```
 Raw Orders (stream)
     ↓
-[Ingestion Pipeline] — Process items in parallel
+[Catalog Pipeline] — Process items in parallel
 ├─ ValidOrders → Continue
 └─ InvalidOrders → DLQ
     ↓
 [ForEach ValidOrder] — Process each order
-├─ [RulesEngine Pipeline]
+├─ [Pricing Pipeline]
 │  └─ Calculate pricing + discounts
 ├─ [DatabaseStep] — Save with final price
 └─ Continue to next order
@@ -47,7 +47,7 @@ Processed Orders (all with final price)
 ### Implementation
 
 ```csharp
-// Pseudo-code combining Ingestion + RulesEngine
+// Pseudo-code combining Catalog + Pricing
 public class OrderProcessingPipeline
 {
     public static ICompiledPipeline<ProcessingData> Build()
@@ -58,13 +58,13 @@ public class OrderProcessingPipeline
             .DefineDomain("Core")
                 .DefineTask<ProcessingData>("Process")
                     // Step 1: Ingest and validate
-                    .AddStep("IngestOrders", new IngestionStep())
+                    .AddStep("IngestOrders", new CatalogStep())
                     
                     // Step 2: For each valid order, calculate pricing
                     .ForEach<ProcessingData, Order>(
                         d => d.ValidOrders,
                         order => order
-                            // Calculate pricing (RulesEngine pattern)
+                            // Calculate pricing (Pricing pattern)
                             .AddStep(new CalculateNetPriceStep())
                             .AddStep(new EvaluateDiscountEligibilityStep())
                             .AddStep(new ApplyPromotionRulesStep())
@@ -91,21 +91,21 @@ public class OrderProcessingPipeline
 ### Use Case
 
 Synchronize orders with external system, then fulfill:
-1. Batch sync orders (BatchSync + Gate)
-2. For each synced order, fulfill (OrderSaga)
+1. Batch sync orders (Accounting + Gate)
+2. For each synced order, fulfill (Orders)
 
 ### Architecture
 
 ```
 Orders
     ↓
-[BatchSync Pipeline] — Gate: Network
+[Accounting Pipeline] — Gate: Network
 ├─ Call sync API for each order
 ├─ Track synced + failed
 └─ Return synced orders
     ↓
 [ForEach SyncedOrder] — Process each
-└─ [OrderSaga Pipeline] — Fulfill
+└─ [Orders Pipeline] — Fulfill
    ├─ ReserveInventory
    ├─ ChargePayment
    ├─ Ship
@@ -137,7 +137,7 @@ public class SyncAndFulfillPipeline
                     .ForEach<SyncFulfillData, Order>(
                         d => d.SyncedOrders,
                         order => order
-                            // OrderSaga pattern
+                            // Orders pattern
                             .AddStep("Begin", new BeginSagaStep())
                             .AddStep("Reserve", new ReserveInventoryStep(inv))
                             .AddStep("Charge", new ChargePaymentStep(pay, order.Total))
@@ -158,24 +158,24 @@ public class SyncAndFulfillPipeline
 ### Use Case
 
 End-to-end order processing:
-1. Ingest orders (Ingestion)
-2. Validate + Price (RulesEngine)
-3. Sync with systems (BatchSync)
-4. Fulfill (OrderSaga)
+1. Ingest orders (Catalog)
+2. Validate + Price (Pricing)
+3. Sync with systems (Accounting)
+4. Fulfill (Orders)
 
 ### High-Level Flow
 
 ```
 Raw Orders
-    ↓ [Ingestion: ForEach validate]
+    ↓ [Catalog: ForEach validate]
 Valid + Invalid Orders
-    ↓ [RulesEngine: ForEach price calculate]
+    ↓ [Pricing: ForEach price calculate]
 Priced Orders
-    ↓ [BatchSync: Gate network sync]
+    ↓ [Accounting: Gate network sync]
 Synced + Failed Orders
     ├─ Synced: Continue to fulfillment
     └─ Failed: Retry or DLQ
-    ↓ [OrderSaga: ForEach fulfill with saga + compensation]
+    ↓ [Orders: ForEach fulfill with saga + compensation]
 Fulfilled + Orphaned Orders
 ```
 
@@ -195,24 +195,24 @@ public class CompleteOrderLifecyclePipeline
             .WithTuning()
             .DefineDomain("Core")
                 .DefineTask<LifecycleData>("Process")
-                    // Phase 1: Ingest (Ingestion pattern)
-                    .AddStep("Ingest", new IngestionStep())
+                    // Phase 1: Ingest (Catalog pattern)
+                    .AddStep("Ingest", new CatalogStep())
                     
                     // Phase 2: Process each order (ForEach)
                     .ForEach<LifecycleData, Order>(
                         d => d.ValidOrders,
                         order => order
-                            // Sub-phase 2a: Price (RulesEngine pattern)
+                            // Sub-phase 2a: Price (Pricing pattern)
                             .AddStep("Price1", new CalculateNetPriceStep())
                             .AddStep("Price2", new EvaluateDiscountEligibilityStep())
                             .AddStep("Price3", new ApplyPromotionRulesStep())
                             .AddStep("Price4", new CalculateFinalPriceStep())
                             
-                            // Sub-phase 2b: Sync (BatchSync pattern with gate)
+                            // Sub-phase 2b: Sync (Accounting pattern with gate)
                             .Gate(ResourceKind.Network, null, g => g
                                 .AddStep("Sync", new SyncOrderStep()))
                             
-                            // Sub-phase 2c: Fulfill (OrderSaga pattern)
+                            // Sub-phase 2c: Fulfill (Orders pattern)
                             .AddStep("Begin", new BeginSagaStep())
                             .AddStep("Reserve", new ReserveInventoryStep(inv))
                             .AddStep("Charge", new ChargePaymentStep(pay, order.Total))
@@ -294,24 +294,24 @@ public class CompleteOrderLifecyclePipeline
 
 ### Level 1: Single Feature
 ```
-RulesEngine only → Pricing logic
+Pricing only → Pricing logic
 ```
 
 ### Level 2: Feature + ForEach
 ```
-RulesEngine + ForEach → Price multiple orders
-Ingestion + RulesEngine → Ingest and price
+Pricing + ForEach → Price multiple orders
+Catalog + Pricing → Ingest and price
 ```
 
 ### Level 3: Feature + ForEach + Gate
 ```
-RulesEngine + ForEach + Gate(Network) → Price orders then sync
-BatchSync + Gate → Sync items with throttling
+Pricing + ForEach + Gate(Network) → Price orders then sync
+Accounting + Gate → Sync items with throttling
 ```
 
 ### Level 4: Multiple Features Composed
 ```
-Ingestion (ForEach) + RulesEngine (per-item) + BatchSync (Gate) + OrderSaga
+Catalog (ForEach) + Pricing (per-item) + Accounting (Gate) + Orders
 ```
 
 ## 🎯 Best Practices
@@ -320,43 +320,43 @@ Ingestion (ForEach) + RulesEngine (per-item) + BatchSync (Gate) + OrderSaga
 
 ```csharp
 // ✓ Start here
-.AddStep(new RulesEngineStep())
+.AddStep(new PricingStep())
 
 // Then add ForEach
 .ForEach<Data, Item>(
     d => d.Items,
     item => item
-        .AddStep(new RulesEngineStep()))
+        .AddStep(new PricingStep()))
 
 // Then add Gate
 .ForEach<Data, Item>(
     d => d.Items,
     item => item
         .Gate(ResourceKind.Network, null, g => g
-            .AddStep(new RulesEngineStep())))
+            .AddStep(new PricingStep())))
 ```
 
 ### Practice 2: Test Each Layer Separately
 
 ```csharp
 [Fact]
-public void WhenRulesEngine_Then_CalculatesPricing()
+public void WhenPricing_Then_CalculatesPricing()
 {
-    var pipeline = RulesEnginePipeline.Build();
+    var pipeline = PricingPipeline.Build();
     // Test pricing logic
 }
 
 [Fact]
-public void WhenForEachRulesEngine_Then_ProcessesAllOrders()
+public void WhenForEachPricing_Then_ProcessesAllOrders()
 {
-    var pipeline = ForEachRulesEnginePipeline.Build();
+    var pipeline = ForEachPricingPipeline.Build();
     // Test parallelism
 }
 
 [Fact]
-public void WhenBatchSyncWithGate_Then_ThrottlesConcurrency()
+public void WhenAccountingWithGate_Then_ThrottlesConcurrency()
 {
-    var pipeline = BatchSyncPipeline.Build();
+    var pipeline = AccountingPipeline.Build();
     // Test gate behavior
 }
 ```
@@ -421,3 +421,4 @@ public void WhenBatchSyncWithGate_Then_ThrottlesConcurrency()
 ---
 
 **Ready to build complex systems?** Study real scenarios and combine patterns as shown above.
+

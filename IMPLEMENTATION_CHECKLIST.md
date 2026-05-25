@@ -1,12 +1,12 @@
-# Ingestion Feature Implementation Checklist ✅
+# Catalog Feature Implementation Checklist ✅
 
 ## Data Models ✅
 - [x] `RawRecord(Id, Name, Amount)` — Input from stream
 - [x] `ValidatedRecord(Id, Name, Amount, ProcessedAt)` — Enriched output with timestamp
 - [x] `ValidationError(Id, Reason)` — Error with reason
-- [x] `IngestionData` — Pipeline record with input/output collections
+- [x] `CatalogData` — Pipeline record with input/output collections
 
-**File**: `src/Ingestion/IngestionData.cs`
+**File**: `src/Catalog/CatalogData.cs`
 
 ---
 
@@ -15,48 +15,48 @@
 ### MaterializeStep ✅
 - [x] Initializes ValidItems and InvalidItems collections
 - [x] Sets TotalProcessed count
-- [x] Extends PureStep<IngestionData>
+- [x] Extends PureStep<CatalogData>
 - [x] One responsibility: prepare input stream
 
-**File**: `src/Ingestion/Steps/MaterializeStep.cs`
+**File**: `src/Catalog/Steps/MaterializeStep.cs`
 
 ### ValidateItemStep ✅
 - [x] Checks Name.Length > 0
 - [x] Checks Amount > 0
 - [x] Returns error reason if invalid, null if valid
-- [x] Extends PureStep<IngestionData>
+- [x] Extends PureStep<CatalogData>
 - [x] One responsibility: validation constraints
 
-**File**: `src/Ingestion/Steps/ValidateItemStep.cs`
+**File**: `src/Catalog/Steps/ValidateItemStep.cs`
 
 ### ProcessItemStep ✅
 - [x] Transforms RawRecord → ValidatedRecord
 - [x] Adds ProcessedAt timestamp
-- [x] Extends PureStep<IngestionData>
+- [x] Extends PureStep<CatalogData>
 - [x] One responsibility: transformation
 
-**File**: `src/Ingestion/Steps/ProcessItemStep.cs`
+**File**: `src/Catalog/Steps/ProcessItemStep.cs`
 
 ### ProcessAllItemsStep ✅
 - [x] Iterates all items in stream
 - [x] Calls validation on each
 - [x] Calls transformation on valid items
 - [x] Populates ValidItems and InvalidItems
-- [x] Extends PureStep<IngestionData>
+- [x] Extends PureStep<CatalogData>
 - [x] One responsibility: orchestrate validation + transformation
 - [x] Implements partial success semantics
 
-**File**: `src/Ingestion/Steps/ProcessAllItemsStep.cs`
+**File**: `src/Catalog/Steps/ProcessAllItemsStep.cs`
 
 ### SummarizeResultsStep ✅
 - [x] Counts successes/errors
 - [x] Builds human-readable summary string
 - [x] Updates SuccessCount and ErrorCount
-- [x] Extends PureStep<IngestionData>
+- [x] Extends PureStep<CatalogData>
 - [x] One responsibility: aggregate outcomes
 - [x] Handles all cases (all valid, all invalid, mixed)
 
-**File**: `src/Ingestion/Steps/SummarizeResultsStep.cs`
+**File**: `src/Catalog/Steps/SummarizeResultsStep.cs`
 
 ---
 
@@ -64,10 +64,10 @@
 - [x] Assembles steps in correct order
 - [x] Uses declarative builder API
 - [x] No gates (CPU-bound processing)
-- [x] Uses ICompiledPipeline<IngestionData>
+- [x] Uses ICompiledPipeline<CatalogData>
 - [x] Build() factory method returns compiled pipeline
 
-**File**: `src/Ingestion/Pipelines/IngestionPipeline.cs`
+**File**: `src/Catalog/Pipelines/CatalogPipeline.cs`
 
 **Topology**:
 ```
@@ -81,25 +81,25 @@ InputStream → Materialize → ProcessAllItems → SummarizeResults → Summary
 
 ## Tests ✅
 
-### Test Data Factory (`IngestionTestData.cs`) ✅
+### Test Data Factory (`CatalogTestData.cs`) ✅
 - [x] CreateRawRecord() — Single valid item
 - [x] CreateValidatedRecord() — Single enriched item
 - [x] CreateValidationError() — Single error
-- [x] CreateIngestionData() — Pipeline data with items
+- [x] CreateCatalogData() — Pipeline data with items
 - [x] CreateAllValidData(count) — All items pass validation
 - [x] CreateAllInvalidData(count) — All items fail validation
 - [x] CreateMixedData(validCount, invalidCount) — Mix of valid/invalid
 
-**File**: `Tests/Features/Ingestion/Shared/IngestionTestData.cs`
+**File**: `Tests/Features/Catalog/Shared/CatalogTestData.cs`
 
-### Data Model Tests (`IngestionDataTests.cs`) ✅
+### Data Model Tests (`CatalogDataTests.cs`) ✅
 - [x] WhenCreated_Then_HasInitialDefaults()
 - [x] WhenMutated_Then_ReturnsNewInstance()
 - [x] WhenInputStreamPopulated_Then_PreservesData()
 
-**File**: `Tests/Features/Ingestion/IngestionDataTests.cs`
+**File**: `Tests/Features/Catalog/CatalogDataTests.cs`
 
-### Pipeline Integration Tests (`IngestionPipelineTests.cs`) ✅
+### Pipeline Integration Tests (`CatalogPipelineTests.cs`) ✅
 
 #### Happy Path (All Valid)
 - [x] WhenAllValid_Then_AllProcessedSuccessfully()
@@ -135,13 +135,13 @@ InputStream → Materialize → ProcessAllItems → SummarizeResults → Summary
 
 **Total Test Cases**: 20+ (40+ including theory/inline data)
 
-**File**: `Tests/Features/Ingestion/IngestionPipelineTests.cs`
+**File**: `Tests/Features/Catalog/CatalogPipelineTests.cs`
 
 ---
 
 ## Documentation ✅
 
-### README.md (`src/Ingestion/Docs/README.md`) ✅
+### README.md (`src/Catalog/Docs/README.md`) ✅
 - [x] **Problem Statement** — Pain points of ad hoc buffering
 - [x] **EvalApp Solution** — Data models, pipeline topology
 - [x] **SOLID Mapping** — SRP, OCP, LSP, DIP, ISP
@@ -206,7 +206,7 @@ InputStream → Materialize → ProcessAllItems → SummarizeResults → Summary
 - [x] Extensible via inheritance or composition
 
 ### Liskov Substitution (LSP)
-- [x] All steps inherit PureStep<IngestionData>
+- [x] All steps inherit PureStep<CatalogData>
 - [x] Consistent error contracts (ValidationError)
 - [x] Substitutable without breaking clients
 
@@ -223,7 +223,7 @@ InputStream → Materialize → ProcessAllItems → SummarizeResults → Summary
 ---
 
 ## Build & Compilation ✅
-- [x] Ingestion code compiles without errors
+- [x] Catalog code compiles without errors
 - [x] No namespace issues
 - [x] All usings properly resolved via GlobalUsings.cs
 - [x] Ready for test execution
@@ -233,22 +233,22 @@ InputStream → Materialize → ProcessAllItems → SummarizeResults → Summary
 ## Deliverables Summary
 
 ### Code Files (6)
-1. `src/Ingestion/IngestionData.cs` — Data models
-2. `src/Ingestion/Steps/MaterializeStep.cs` — Initialize
-3. `src/Ingestion/Steps/ValidateItemStep.cs` — Validate
-4. `src/Ingestion/Steps/ProcessItemStep.cs` — Transform
-5. `src/Ingestion/Steps/ProcessAllItemsStep.cs` — Orchestrate
-6. `src/Ingestion/Steps/SummarizeResultsStep.cs` — Summarize
-7. `src/Ingestion/Pipelines/IngestionPipeline.cs` — Pipeline
+1. `src/Catalog/CatalogData.cs` — Data models
+2. `src/Catalog/Steps/MaterializeStep.cs` — Initialize
+3. `src/Catalog/Steps/ValidateItemStep.cs` — Validate
+4. `src/Catalog/Steps/ProcessItemStep.cs` — Transform
+5. `src/Catalog/Steps/ProcessAllItemsStep.cs` — Orchestrate
+6. `src/Catalog/Steps/SummarizeResultsStep.cs` — Summarize
+7. `src/Catalog/Pipelines/CatalogPipeline.cs` — Pipeline
 
 ### Test Files (3)
-1. `Tests/Features/Ingestion/IngestionTestData.cs` — Test factories
-2. `Tests/Features/Ingestion/IngestionDataTests.cs` — Data tests
-3. `Tests/Features/Ingestion/IngestionPipelineTests.cs` — Integration & unit tests
+1. `Tests/Features/Catalog/CatalogTestData.cs` — Test factories
+2. `Tests/Features/Catalog/CatalogDataTests.cs` — Data tests
+3. `Tests/Features/Catalog/CatalogPipelineTests.cs` — Integration & unit tests
 
 ### Documentation (2)
-1. `src/Ingestion/Docs/README.md` — Feature guide
-2. `INGESTION_IMPLEMENTATION.md` — Implementation summary
+1. `src/Catalog/Docs/README.md` — Feature guide
+2. `Catalog_IMPLEMENTATION.md` — Implementation summary
 
 ### Total Lines of Code
 - **Steps**: ~850 LOC
@@ -275,9 +275,10 @@ InputStream → Materialize → ProcessAllItems → SummarizeResults → Summary
 
 ## Status: ✅ COMPLETE
 
-The Ingestion feature is **ready for review** and demonstrates:
+The Catalog feature is **ready for review** and demonstrates:
 - How to handle stream-to-batch processing
 - Partial success semantics in pipelines
 - SOLID principle application in EvalApp
 - Comprehensive test coverage (80%+)
 - Clear documentation for customization
+

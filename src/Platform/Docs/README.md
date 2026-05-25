@@ -1,4 +1,4 @@
-# Platform Capability Validation Service (ApiSurface)
+# Platform Capability Validation Service (Platform)
 
 Back to platform overview: [Root README](../../../README.md)
 
@@ -17,7 +17,7 @@ This service is intentionally synthetic and internal-facing.
 
 ## Implemented Business Rules
 
-Source: `src/ApiSurface/Pipelines/ApiSurfacePipeline.cs`
+Source: `src/Platform/Pipelines/PlatformPipeline.cs`
 
 1. Policy bonus can be injected through service-provider step factory.
 2. Parallel heuristics (`+10`, `*3`) are merged by strategy contract.
@@ -36,9 +36,10 @@ Source: `src/ApiSurface/Pipelines/ApiSurfacePipeline.cs`
 
 | Concern | Path |
 |---|---|
-| Coverage pipeline | `src/ApiSurface/Pipelines/ApiSurfacePipeline.cs` |
-| Events/merge/support/steps | `src/ApiSurface/Events/`, `Merge/`, `Support/`, `Steps/` |
-| Executable specs | `Tests/Features/ApiSurface/` |
+| Coverage pipeline | `src/Platform/Pipelines/PlatformPipeline.cs` |
+| Events/merge/support/steps | `src/Platform/Events/`, `Merge/`, `Support/`, `Steps/` |
+| Executable specs | `Tests/Features/Platform/` |
 
 
-Verify: `dotnet test --filter "ApiSurface"`
+Verify: `dotnet test --filter "Platform"`
+

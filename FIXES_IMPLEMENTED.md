@@ -9,12 +9,12 @@ Successfully fixed all Priority 1 issues identified in the EvalApp Usage Audit. 
 **Issue**: Compensation and forward steps incorrectly used PureStep with async method calls via `.GetAwaiter().GetResult()`
 
 **Fixed Files**:
-- `src/OrderSaga/Steps/ReserveInventoryStep.cs` - Changed from `PureStep` → `AsyncStep`
-- `src/OrderSaga/Steps/ChargePaymentStep.cs` - Changed from `PureStep` → `AsyncStep`  
-- `src/OrderSaga/Steps/ShipStep.cs` - Changed from `PureStep` → `AsyncStep`
-- `src/OrderSaga/Steps/ReleaseReservationStep.cs` - Changed from `PureStep` → `AsyncStep`
-- `src/OrderSaga/Steps/RefundPaymentStep.cs` - Changed from `PureStep` → `AsyncStep`
-- `src/OrderSaga/Steps/CancelShipmentStep.cs` - Changed from `PureStep` → `AsyncStep`
+- `src/Orders/Steps/ReserveInventoryStep.cs` - Changed from `PureStep` → `AsyncStep`
+- `src/Orders/Steps/ChargePaymentStep.cs` - Changed from `PureStep` → `AsyncStep`  
+- `src/Orders/Steps/ShipStep.cs` - Changed from `PureStep` → `AsyncStep`
+- `src/Orders/Steps/ReleaseReservationStep.cs` - Changed from `PureStep` → `AsyncStep`
+- `src/Orders/Steps/RefundPaymentStep.cs` - Changed from `PureStep` → `AsyncStep`
+- `src/Orders/Steps/CancelShipmentStep.cs` - Changed from `PureStep` → `AsyncStep`
 
 **Improvement**: Steps now properly use `async ValueTask<T> ExecuteAsync()` instead of blocking calls.
 
@@ -22,8 +22,8 @@ Successfully fixed all Priority 1 issues identified in the EvalApp Usage Audit. 
 **Issue**: Steps did not check or propagate CancellationToken, preventing graceful cancellation
 
 **Fixed Files**:
-- All OrderSaga step files - Added `ct.ThrowIfCancellationRequested()` after async operations
-- `src/BatchSync/Steps/ProcessBatchStep.cs` - Added `ct.ThrowIfCancellationRequested()` in loop
+- All Orders step files - Added `ct.ThrowIfCancellationRequested()` after async operations
+- `src/Accounting/Steps/ProcessBatchStep.cs` - Added `ct.ThrowIfCancellationRequested()` in loop
 
 **Improvement**: Full cancellation token propagation and checking throughout the pipeline.
 
@@ -31,7 +31,7 @@ Successfully fixed all Priority 1 issues identified in the EvalApp Usage Audit. 
 **Issue**: Tests were calling `.Execute()` on steps that now only have `.ExecuteAsync()`
 
 **Fixed Files**:
-- `Tests/Features/OrderSaga/OrderSagaStepsTests.cs` - Updated all test methods to:
+- `Tests/Features/Orders/OrdersStepsTests.cs` - Updated all test methods to:
   - Use `async Task` test methods
   - Call `ExecuteAsync(data, cancellationToken)` instead of `Execute(data)`
   - Create proper `CancellationTokenSource` for test execution
@@ -58,7 +58,7 @@ Status:     ✅ 100% PASS
 
 | Component | Change | Benefit |
 |-----------|--------|---------|
-| OrderSaga Steps | PureStep → AsyncStep | Proper async support for external service calls |
+| Orders Steps | PureStep → AsyncStep | Proper async support for external service calls |
 | Compensation Steps | Added async/await | No more blocking calls to async methods |
 | All Async Steps | Added CT checks | Graceful cancellation support |
 | Test Suite | Updated to async/await | Tests now properly verify async behavior |
@@ -78,3 +78,4 @@ Status:     ✅ 100% PASS
 Build: ✅ Success (no errors, 4 warnings about null references - pre-existing)
 Tests: ✅ All 53 tests pass
 Code: ✅ Follows SOLID principles and EvalApp best practices
+
