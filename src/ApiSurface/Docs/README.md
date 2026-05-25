@@ -1,31 +1,44 @@
-# API Surface Coverage Feature
+# Platform Capability Validation Service (ApiSurface)
 
-## What this teaches
+Back to platform overview: [Root README](../../../README.md)
 
-This feature demonstrates advanced EvalApp.Consumer APIs that are easy to miss in basic tutorials:
+## Business Requirement
 
-- `WithStepFactory(...)` using `ServiceProviderStepFactory`
-- `WithEvents(...)` with full pipeline/step lifecycle callbacks
-- `WithPressure(...)` + scoped `.Pressure(...)`
-- `AddParallelGroup(...)` with a custom `IMergeStrategy<T>`
-- `AddReadOnlyBridge(...)` for merge-only bridge projections
-- true saga flow using `.BeginSaga()` / `.EndSaga()`
-- saga-only operations: `AddMaterialize`, `AddForEach`, `AddStepWithCompensation`, and `AddGate(..., compensate)`
-- optional tuning variants via `BuildWithBayesianTuning(...)`
+Northstar platform engineering needs a controlled service that validates advanced pipeline capabilities before they are adopted by product teams:
 
-## Pipeline shape
+- lifecycle events
+- step factory activation behavior
+- parallel merge semantics
+- bridge projections
+- saga compensation behavior
+- pressure/window budget controls
 
-1. Resolve a step through a custom step factory.
-2. Run two branches in parallel and merge with a custom merge strategy.
-3. Run a read-only bridge projection and merge it into the main flow.
-4. Enter saga scope:
-   - materialize async items
-   - process items with saga `ForEach`
-   - register compensations
-   - run a gated external call with compensation
-5. Execute custom pressure scope and window-budget scope.
-6. Finalize and return result.
+This service is intentionally synthetic and internal-facing.
 
-## Why this matters
+## Implemented Business Rules
 
-This is the parity feature for teams who want to understand and exercise nearly all consumer builder surfaces in one concrete example, not just the common `AddStep + Gate + ForEach` path.
+Source: `src/ApiSurface/Pipelines/ApiSurfacePipeline.cs`
+
+1. Policy bonus can be injected through service-provider step factory.
+2. Parallel heuristics (`+10`, `*3`) are merged by strategy contract.
+3. Bridge projection contributes baseline benchmark value.
+4. Saga reserve and gate stages increment counters, with compensation on failure.
+5. Pressure and window scopes emit markers for behavior verification.
+
+## Features Demonstrated
+
+**EvalApp pattern:** Lifecycle events, service factory resolution, saga compensation, tuning variants, pressure/window budgets
+
+**SOLID principle:** ISP (service factory and merge strategy are abstraction-driven)
+
+## Implementation
+
+
+| Concern | Path |
+|---|---|
+| Coverage pipeline | `src/ApiSurface/Pipelines/ApiSurfacePipeline.cs` |
+| Events/merge/support/steps | `src/ApiSurface/Events/`, `Merge/`, `Support/`, `Steps/` |
+| Executable specs | `Tests/Features/ApiSurface/` |
+
+
+Verify: `dotnet test --filter "ApiSurface"`

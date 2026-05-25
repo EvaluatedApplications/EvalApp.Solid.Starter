@@ -1,38 +1,46 @@
-# Advanced Patterns Feature
+# Quote Intelligence Service (AdvancedPatterns)
 
-## What this teaches
+Back to platform overview: [Root README](../../../README.md)
 
-This feature demonstrates advanced EvalApp capabilities in one runnable pipeline:
+## Business Requirement
 
-- `WithResource(...)` + `WithTuning()` for adaptive concurrency signals
-- `WithWindowBudget(...)` and task-level `.WindowBudget(...)`
-- multiple middleware layers (`Trace`, retry, timeout guard)
-- `Materialize(...)` from async streams into pipeline state
-- `AddSubTaskFor(...)` for scoped sub-task transformations
-- `AddStepWithFallback(...)` for resilient primary/fallback behavior
-- CPU and Disk I/O gates in addition to Network gates
-- `ForEach` permutations using `ContinueOnError`, `FailFast`, and `CollectAndThrow`
+Northstar’s quoting surface must remain responsive under variable load while preserving:
 
-## Pipeline shape
+- resilience (fallback when primary source degrades)
+- observability (traceable path decisions)
+- auditability (replayable snapshots and integrity markers)
 
-1. Seed metadata and materialize async input.
-2. Run a sub-task that stamps metadata.
-3. Fetch a quote with fallback inside a Network gate.
-4. Transform items in `ForEach` with a selectable failure mode.
-5. Apply a window-budget marker.
-6. Compute a digest in a CPU gate.
-7. Persist a snapshot in a Disk I/O gate.
+## Implemented Business Rules
 
-## Why this matters
+Source: `src/AdvancedPatterns/Pipelines/AdvancedPatternsPipeline.cs`
 
-This module is the "full surface" tutorial sample: it combines reliability, throttling, composability, and observability patterns that appear in production pipelines.
+1. Request metadata is stamped before quote retrieval.
+2. Primary quote path returns premium value (`125`) when healthy.
+3. Fallback quote path returns conservative value (`100`) on primary failure.
+4. Negative items are rejected during transform stage.
+5. Output includes digest/snapshot traces for operational replay.
 
-## Try it
+Runtime controls:
 
-Run:
+- middleware chain: Trace -> RetryOnce -> TimeoutGuard
+- `ForEach` failure modes selectable (`ContinueOnError`, `FailFast`, `CollectAndThrow`)
+- resource boundaries for Network, CPU, and DiskIO
 
-```bash
-dotnet run
-```
+## Features Demonstrated
 
-Then inspect the Advanced Patterns section and `Trace` output to see middleware markers, fallback behavior, and gate-executed stages.
+**EvalApp pattern:** Middleware chain, fallback branching, resource gates, ForEach failure modes
+
+**SOLID principle:** LSP (middleware and fallback steps are interchangeable)
+
+## Implementation
+
+
+| Concern | Path |
+|---|---|
+| Pipeline declaration | `src/AdvancedPatterns/Pipelines/AdvancedPatternsPipeline.cs` |
+| Middleware behavior | `src/AdvancedPatterns/Middleware/` |
+| Helper operations | `src/AdvancedPatterns/Helpers/AdvancedPatternHelpers.cs` |
+| Executable specs | `Tests/Features/AdvancedPatterns/` |
+
+
+Verify: `dotnet test --filter "AdvancedPatterns"`

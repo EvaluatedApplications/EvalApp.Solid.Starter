@@ -1,45 +1,46 @@
-# Commerce Orchestration Feature
+# Commerce Orchestration Service
 
-## What this teaches
+Back to platform overview: [Root README](../../../README.md)
 
-This capstone shows how EvalApp handles:
-- multiple domains in one app
-- pipeline composition (`Pipeline<T>` as a step)
-- cross-domain data flow by passing one pipeline output into the next
-- `ContextPureStep` and `ContextSideEffectStep`
-- `ForEach` with tunable parallelism
-- `Gate(ResourceKind.X)` with different resource kinds
-- `If` branching at the topology level
+## Business Requirement
 
-## Domain map
+Northstar requires one end-to-end business flow that coordinates:
 
-| Domain | Responsibility |
+- pricing policy domain
+- fulfillment policy domain
+- orchestration domain that stitches both into one order lifecycle
+
+## Implemented Business Rules
+
+Source: `src/Orchestration/Pipelines/*.cs`, `src/Orchestration/Contexts/*`
+
+1. Pricing computes net, discount, tax, and final totals using domain context.
+2. Fulfillment prepares packable lines and selects shipping by policy threshold/VIP status.
+3. Label creation and archival are explicit side-effect stages.
+4. Orchestration runs pricing output into fulfillment input in ordered composition.
+
+Operational constants:
+
+- default shipping threshold: `250`
+- default shipping rates: standard `8.50`, express `18.00`
+- policy variant provided by `FulfillmentDomainContext.Premium`
+
+## Features Demonstrated
+
+**EvalApp pattern:** Multiple domains composed in one app builder chain with sub-pipeline composition
+
+**SOLID principle:** ISP (narrow, composable pipeline contracts)
+
+## Implementation
+
+
+| Concern | Path |
 |---|---|
-| Pricing | Calculate the quote from the order |
-| Fulfillment | Pack items, choose shipping, generate label, archive order |
-| Orchestration | Compose pricing and fulfillment into one end-to-end flow |
+| Pricing pipeline | `src/Orchestration/Pipelines/CommercePricingPipeline.cs` |
+| Fulfillment pipeline | `src/Orchestration/Pipelines/CommerceFulfillmentPipeline.cs` |
+| Orchestration pipeline | `src/Orchestration/Pipelines/CommerceOrchestrationPipeline.cs` |
+| Domain policies | `src/Orchestration/Contexts/` |
+| Executable specs | `Tests/Features/Orchestration/` |
 
-## Pipeline shape
 
-1. `PriceOrder` runs the pricing pipeline.
-2. `FulfillOrder` runs the fulfillment pipeline.
-3. The orchestration pipeline composes both, so the output of one becomes the input of the next.
-
-## Why this matters
-
-This is the closest thing to a real application story in the tutorial:
-- one data record flows across multiple domains
-- policy is injected through context
-- line items are processed in parallel
-- external work is gated
-- the final order is archived after shipping is prepared
-
-## Try it
-
-Run:
-
-```bash
-dotnet run
-```
-
-Then inspect the console trace to see the pricing and fulfillment stages run in order.
+Verify: `dotnet test --filter "Orchestration"`

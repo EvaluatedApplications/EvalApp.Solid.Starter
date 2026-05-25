@@ -4,6 +4,9 @@ using EvalApp.Solid.Starter.Features.OrderSaga.Pipelines;
 using EvalApp.Solid.Starter.Features.OrderSaga.Steps;
 using EvalApp.Solid.Starter.Tests.Features.OrderSaga.Shared;
 using Xunit;
+using TestMockInventoryService = EvalApp.Solid.Starter.Tests.Features.OrderSaga.Shared.MockInventoryService;
+using TestMockPaymentService = EvalApp.Solid.Starter.Tests.Features.OrderSaga.Shared.MockPaymentService;
+using TestMockShipmentService = EvalApp.Solid.Starter.Tests.Features.OrderSaga.Shared.MockShipmentService;
 
 namespace EvalApp.Solid.Starter.Tests.Features.OrderSaga;
 
@@ -52,7 +55,7 @@ public class ReserveInventoryStepTests
     public async Task WhenInventoryAvailable_Then_ReservationIdAssignedAndStateReserved()
     {
         // Arrange
-        var mockInventory = new MockInventoryService();
+        var mockInventory = new TestMockInventoryService();
         var data = OrderSagaTestData.CreateOrder();
         var step = new ReserveInventoryStep(mockInventory);
         using var cts = new CancellationTokenSource();
@@ -70,7 +73,7 @@ public class ReserveInventoryStepTests
     public async Task WhenInventoryScarce_Then_ThrowsException()
     {
         // Arrange
-        var mockInventory = new MockInventoryService(shouldFail: true);
+        var mockInventory = new TestMockInventoryService(shouldFail: true);
         var data = OrderSagaTestData.CreateOrder();
         var step = new ReserveInventoryStep(mockInventory);
         using var cts = new CancellationTokenSource();
@@ -86,7 +89,7 @@ public class ReleaseReservationStepTests
     public async Task WhenReservationIdExists_Then_ReleasesAndStateCancelled()
     {
         // Arrange
-        var mockInventory = new MockInventoryService();
+        var mockInventory = new TestMockInventoryService();
         var reserveStep = new ReserveInventoryStep(mockInventory);
         var data = OrderSagaTestData.CreateOrder();
         using var cts = new CancellationTokenSource();
@@ -108,7 +111,7 @@ public class ReleaseReservationStepTests
     public async Task WhenReservationIdMissing_Then_ThrowsException()
     {
         // Arrange
-        var mockInventory = new MockInventoryService();
+        var mockInventory = new TestMockInventoryService();
         var data = OrderSagaTestData.CreateOrder();
         var step = new ReleaseReservationStep(mockInventory);
         using var cts = new CancellationTokenSource();
@@ -124,7 +127,7 @@ public class ChargePaymentStepTests
     public async Task WhenPaymentSucceeds_Then_ChargeAmountSetAndStateCharged()
     {
         // Arrange
-        var mockPayment = new MockPaymentService();
+        var mockPayment = new TestMockPaymentService();
         var data = OrderSagaTestData.CreateOrder();
         var step = new ChargePaymentStep(mockPayment, 100m);
         using var cts = new CancellationTokenSource();
@@ -142,7 +145,7 @@ public class ChargePaymentStepTests
     public async Task WhenPaymentFails_Then_ThrowsException()
     {
         // Arrange
-        var mockPayment = new MockPaymentService(shouldFail: true);
+        var mockPayment = new TestMockPaymentService(shouldFail: true);
         var data = OrderSagaTestData.CreateOrder();
         var step = new ChargePaymentStep(mockPayment, 100m);
         using var cts = new CancellationTokenSource();
@@ -158,7 +161,7 @@ public class RefundPaymentStepTests
     public async Task WhenRefundSucceeds_Then_ChargeAmountNulledAndStateCancelled()
     {
         // Arrange
-        var mockPayment = new MockPaymentService();
+        var mockPayment = new TestMockPaymentService();
         var chargeStep = new ChargePaymentStep(mockPayment, 100m);
         var data = OrderSagaTestData.CreateOrder();
         using var cts = new CancellationTokenSource();
@@ -180,7 +183,7 @@ public class RefundPaymentStepTests
     public async Task WhenChargeAmountMissing_Then_ThrowsException()
     {
         // Arrange
-        var mockPayment = new MockPaymentService();
+        var mockPayment = new TestMockPaymentService();
         var data = OrderSagaTestData.CreateOrder();
         var step = new RefundPaymentStep(mockPayment);
         using var cts = new CancellationTokenSource();
@@ -196,7 +199,7 @@ public class ShipStepTests
     public async Task WhenShipmentSucceeds_Then_ShipmentIdSetAndStateShipped()
     {
         // Arrange
-        var mockShipment = new MockShipmentService();
+        var mockShipment = new TestMockShipmentService();
         var data = OrderSagaTestData.CreateOrder();
         var step = new ShipStep(mockShipment);
         using var cts = new CancellationTokenSource();
@@ -214,7 +217,7 @@ public class ShipStepTests
     public async Task WhenShipmentFails_Then_ThrowsException()
     {
         // Arrange
-        var mockShipment = new MockShipmentService(shouldFail: true);
+        var mockShipment = new TestMockShipmentService(shouldFail: true);
         var data = OrderSagaTestData.CreateOrder();
         var step = new ShipStep(mockShipment);
         using var cts = new CancellationTokenSource();
@@ -230,7 +233,7 @@ public class CancelShipmentStepTests
     public async Task WhenCancellationSucceeds_Then_ShipmentIdNulledAndStateCancelled()
     {
         // Arrange
-        var mockShipment = new MockShipmentService();
+        var mockShipment = new TestMockShipmentService();
         var shipStep = new ShipStep(mockShipment);
         var data = OrderSagaTestData.CreateOrder();
         using var cts = new CancellationTokenSource();
@@ -252,7 +255,7 @@ public class CancelShipmentStepTests
     public async Task WhenShipmentIdMissing_Then_ThrowsException()
     {
         // Arrange
-        var mockShipment = new MockShipmentService();
+        var mockShipment = new TestMockShipmentService();
         var data = OrderSagaTestData.CreateOrder();
         var step = new CancelShipmentStep(mockShipment);
         using var cts = new CancellationTokenSource();
@@ -301,9 +304,9 @@ public class OrderSagaPipelineTests
     public async Task WhenHappyPath_Then_OrderShipped()
     {
         // Arrange
-        var inventory = new MockInventoryService();
-        var payment = new MockPaymentService();
-        var shipment = new MockShipmentService();
+        var inventory = new TestMockInventoryService();
+        var payment = new TestMockPaymentService();
+        var shipment = new TestMockShipmentService();
 
         var pipeline = OrderSagaPipeline.Build(inventory, payment, shipment, 100m);
         var order = OrderSagaTestData.CreateOrder();
